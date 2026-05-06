@@ -1,0 +1,10 @@
+.next/
+node_modules/
+.env.local
+.env
+dist/
+dist-electron/
+drizzle/
+*.js.map
+electron/*.js
+electron/*.d.ts

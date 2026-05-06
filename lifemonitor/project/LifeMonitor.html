@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LifeMonitor</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="note-editor.css" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <style>
+    /* Browser-frame outer page */
+    html, body { background: #0c0c0e; }
+    .frame {
+      width: min(1500px, calc(100vw - 32px));
+      height: min(960px, calc(100vh - 32px));
+      min-width: 1100px;
+      border-radius: 10px; overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06);
+      display: flex; flex-direction: column;
+      background: #1a1a1d;
+    }
+    .frame-tabs {
+      display: flex; align-items: center; height: 38px; flex-shrink: 0;
+      background: #1a1a1d; padding: 0 12px; gap: 12px;
+    }
+    .frame-lights { display: flex; gap: 7px; }
+    .frame-lights i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+    .frame-lights i.r { background: #ff5f57; }
+    .frame-lights i.y { background: #febc2e; }
+    .frame-lights i.g { background: #28c840; }
+    .frame-tabbar { display: flex; align-items: flex-end; flex: 1; height: 100%; padding-left: 4px; gap: 0; }
+    .ftab {
+      position: relative;
+      align-self: flex-end;
+      padding: 0 14px; height: 30px;
+      display: flex; align-items: center; gap: 8px;
+      background: #2a2a2e; color: #e8eaed;
+      font: 500 12px/1 system-ui, -apple-system, sans-serif;
+      border-radius: 8px 8px 0 0;
+      min-width: 160px; max-width: 240px;
+    }
+    .ftab .fdot { width: 10px; height: 10px; border-radius: 50%; background: oklch(0.78 0.06 220); flex-shrink: 0; }
+    .ftab.inactive { background: transparent; color: #9aa0a6; }
+    .ftab.inactive .fdot { background: #5f6368; }
+    .ftoolbar {
+      display: flex; align-items: center; gap: 8px;
+      height: 40px; flex-shrink: 0;
+      background: #2a2a2e; padding: 0 10px;
+    }
+    .ftoolbar .nav { display: flex; gap: 2px; }
+    .ftoolbar .nav i {
+      width: 28px; height: 26px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      color: #9aa0a6; font-size: 14px; cursor: default;
+    }
+    .ftoolbar .nav i:hover { background: #3a3a3e; color: #e8eaed; }
+    .url {
+      flex: 1; height: 28px; border-radius: 14px;
+      background: #1a1a1d; display: flex; align-items: center;
+      gap: 8px; padding: 0 14px;
+      font: 13px/1 ui-monospace, 'JetBrains Mono', monospace;
+      color: #c8cad0;
+    }
+    .url .lock { color: #9aa0a6; font-size: 11px; }
+    .url .path { color: #9aa0a6; }
+    .frame-content { flex: 1; display: flex; min-height: 0; }
+    #root { flex: 1; display: flex; min-height: 0; min-width: 0; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="frame-tabs">
+      <div class="frame-lights"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+      <div class="frame-tabbar">
+        <div class="ftab"><span class="fdot"></span><span>LifeMonitor</span></div>
+        <div class="ftab inactive"><span class="fdot"></span><span>arxiv · scaling laws</span></div>
+        <div class="ftab inactive"><span class="fdot"></span><span>obsidian/research</span></div>
+      </div>
+    </div>
+    <div class="ftoolbar">
+      <div class="nav"><i>‹</i><i>›</i><i>↻</i></div>
+      <div class="url">
+        <span class="lock">⌁</span>
+        <span>app.lifemonitor.local</span>
+        <span class="path">/workspace/research</span>
+      </div>
+      <div class="nav"><i>★</i><i>⋮</i></div>
+    </div>
+    <div class="frame-content">
+      <div id="root"></div>
+    </div>
+  </div>
+
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="widgets.jsx"></script>
+  <script type="text/babel" src="note-editor.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
