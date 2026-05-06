@@ -26,6 +26,14 @@ export default function Page() {
 
   return (
     <div className="app" data-theme={theme} data-density={density}>
+      {/* macOS titlebar — traffic lights live in the left 72px */}
+      <div className="titlebar">
+        <div className="titlebar-traffic" />
+        <div className="titlebar-drag">
+          <span className="titlebar-title">Polychamber</span>
+        </div>
+      </div>
+
       <Sidebar />
       <div className="app-main">
         <Toolbar />
