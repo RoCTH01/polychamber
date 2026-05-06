@@ -2,12 +2,8 @@
 
 import { useEffect } from 'react'
 import Icon from '../ui/Icon'
-import { useAppStore } from '@/store/app'
 
 export default function Toolbar() {
-  const theme    = useAppStore(s => s.theme)
-  const setTheme = useAppStore(s => s.setTheme)
-
   // ⌘K shortcut — visual-only in this build
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -38,12 +34,6 @@ export default function Toolbar() {
         <span>Search across all sources…</span>
         <span className="kbd">⌘K</span>
       </div>
-      <div className="tb-divider" />
-      <button className="tb-btn" title="Toggle theme"
-        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-        <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
-      </button>
-      <button className="tb-btn" title="Settings"><Icon name="cog" /></button>
     </div>
   )
 }

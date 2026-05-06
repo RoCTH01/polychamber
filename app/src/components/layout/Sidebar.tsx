@@ -1,21 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app'
 import { useWorkspaces } from '@/hooks/useWorkspaces'
 
 export default function Sidebar() {
-  const activeWs      = useAppStore(s => s.activeWorkspace)
-  const setActiveWs   = useAppStore(s => s.setActiveWorkspace)
+  const activeWs       = useAppStore(s => s.activeWorkspace)
+  const setActiveWs    = useAppStore(s => s.setActiveWorkspace)
+  const settingsOpen   = useAppStore(s => s.settingsOpen)
+  const setSettingsOpen = useAppStore(s => s.setSettingsOpen)
   const { workspaces } = useWorkspaces()
-
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 60000)
-    return () => clearInterval(t)
-  }, [])
-
-  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
 
   return (
     <div className="sidebar">
@@ -32,12 +25,15 @@ export default function Sidebar() {
         </div>
       ))}
       <div className="sb-add" title="New workspace">+</div>
+
       <div className="sb-foot">
         <div className="sb-divider" />
-        <div className="sb-status">
-          <span className="sb-pulse" title="online" />
-          <span className="tab">{time}</span>
-        </div>
+        <button
+          className={`sb-settings${settingsOpen ? ' active' : ''}`}
+          title="Settings"
+          onClick={() => setSettingsOpen(!settingsOpen)}>
+          ⚙
+        </button>
       </div>
     </div>
   )
