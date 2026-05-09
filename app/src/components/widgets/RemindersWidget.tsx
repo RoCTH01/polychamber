@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import WidgetShell from './WidgetShell'
 import { useItems } from '@/hooks/useItems'
+import { useContextMenu } from '@/components/ui/ContextMenu'
 import type { DragHandlers } from '@/types'
 
 interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
@@ -12,7 +13,8 @@ const DUE_ORDER = ['today', 'tomorrow', 'this wk', 'next wk']
 export default function RemindersWidget({ id, dragHandlers, onClose }: Props) {
   const [filter, setFilter] = useState('open')
   const [newBody, setNewBody] = useState('')
-  const { items, updateItem, createItem } = useItems({ kind: 'reminder' })
+  const { items, updateItem, createItem, deleteItem } = useItems({ kind: 'reminder' })
+  const { open: openMenu } = useContextMenu()
 
   const visible  = filter === 'open' ? items.filter(r => !r.reminder?.done) : items
   const openCount = items.filter(r => !r.reminder?.done).length
@@ -47,7 +49,12 @@ export default function RemindersWidget({ id, dragHandlers, onClose }: Props) {
             {groups[k].map(r => (
               <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px var(--pad)', cursor: 'default' }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--panel-2)'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}>
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
+                onContextMenu={e => openMenu(e, [
+                  { label: r.reminder?.done ? 'Mark incomplete' : 'Mark complete', checked: r.reminder?.done, action: () => toggle(r) },
+                  { divider: true },
+                  { label: 'Delete', danger: true, action: () => deleteItem(r.id) },
+                ])}>
                 <button onClick={() => toggle(r)} style={{
                   width: 13, height: 13, padding: 0,
                   border: `1px solid ${r.reminder?.done ? 'var(--accent)' : 'var(--border)'}`,

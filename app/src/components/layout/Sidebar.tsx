@@ -12,8 +12,6 @@ export default function Sidebar() {
 
   return (
     <div className="sidebar">
-      <div className="sb-logo" title="Polychamber">P/C</div>
-      <div className="sb-divider" />
       {workspaces.map(ws => (
         <div key={ws.id}
           className={`sb-ws${ws.name === activeWs ? ' active' : ''}`}

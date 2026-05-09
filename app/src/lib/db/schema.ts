@@ -60,12 +60,13 @@ export const activity = pgTable('activity', {
 })
 
 export const calendarEvents = pgTable('calendar_events', {
-  id:         uuid('id').primaryKey().defaultRandom(),
-  title:      text('title').notNull(),
-  kind:       text('kind').notNull(),
-  dayOfWeek:  integer('day_of_week').notNull(),
-  startHour:  numeric('start_hour').notNull(),
-  endHour:    numeric('end_hour').notNull(),
-  weekStart:  date('week_start').notNull(),
-  isCurrent:  boolean('is_current').notNull().default(false),
+  id:           uuid('id').primaryKey().defaultRandom(),
+  title:        text('title').notNull(),
+  kind:         text('kind').notNull(),
+  dayOfWeek:    integer('day_of_week').notNull(),
+  startHour:    numeric('start_hour').notNull(),
+  endHour:      numeric('end_hour').notNull(),
+  weekStart:    date('week_start').notNull(),
+  isCurrent:    boolean('is_current').notNull().default(false),
+  linkedNoteId: uuid('linked_note_id').references((): AnyPgColumn => items.id, { onDelete: 'set null' }),
 })

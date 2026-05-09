@@ -106,14 +106,49 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
           </div>
         </div>
 
-        {/* Heatmap grid */}
-        <div style={{ position: 'relative', flexShrink: 0, paddingLeft: 22 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${weeks.length}, 1fr)`, gap: 3, width: '100%' }}>
-            {weeks.map((wk, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateRows: 'repeat(7, 1fr)', gap: 3, aspectRatio: '1 / 7' }}>
-                {wk.map((d, j) => (
-                  <div key={j} style={{
-                    width: '100%', aspectRatio: '1 / 1', borderRadius: 2,
+        {/* Tile-graph header — reserved row so the hover tooltip never overlaps the KPI boxes */}
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, height: 14, paddingLeft: 22 }}>
+          <span className="mono" style={{ fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.07em' }}>DAILY</span>
+          {hover && (
+            <span className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-2)' }}>
+              {hover.count} entries · {new Date(hover.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </span>
+          )}
+        </div>
+
+        {/* Heatmap grid — single flat CSS grid, column-per-week, no aspect-ratio tricks.
+            365d uses minmax(0, TILE_PX) so columns shrink to fit narrow widgets but
+            never balloon. 90d / 30d use fixed px columns (naturally sized, no stretch).
+            Explicit row heights mean tiles never overflow their tracks.              */}
+        {(() => {
+          const TILE_GAP = 3
+          // 365d uses slightly smaller tiles; 90d/30d stay at 11px
+          const TILE_PX  = view === '365d' ? 10 : 11
+          const gridH    = 7 * TILE_PX + 6 * TILE_GAP   // e.g. 88px or 95px — no overflow
+
+          // Flatten weeks into a single sequence ordered column-by-column so
+          // grid-auto-flow: column fills each week-column top→bottom automatically.
+          const flatDays = weeks.flatMap(wk => wk)
+
+          return (
+            <div style={{ position: 'relative', flexShrink: 0, paddingLeft: 22, height: gridH }}>
+              <div style={{
+                display: 'grid',
+                // 365d: columns shrink to fit but cap at TILE_PX — fills width without overflowing
+                // 90d/30d: fixed pixel columns, grid width = content, no stretching
+                gridTemplateColumns: view === '365d'
+                  ? `repeat(${weeks.length}, minmax(0, ${TILE_PX}px))`
+                  : `repeat(${weeks.length}, ${TILE_PX}px)`,
+                gridTemplateRows: `repeat(7, ${TILE_PX}px)`,  // explicit → no aspect-ratio conflict
+                gridAutoFlow: 'column',   // place items week-by-week (column-major)
+                gap: TILE_GAP,
+                width: '100%',
+                height: '100%',
+              }}>
+                {flatDays.map((d, i) => (
+                  <div key={i} style={{
+                    width: '100%', height: '100%',
+                    borderRadius: 2,
                     background: d ? scaleColor(d.count) : 'transparent',
                     outline: hover && d && hover.date === d.date ? '1px solid var(--text-2)' : 'none',
                     outlineOffset: 1,
@@ -123,19 +158,20 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
                   />
                 ))}
               </div>
-            ))}
-          </div>
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, display: 'grid', gridTemplateRows: 'repeat(7, 1fr)', gap: 3, fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-4)', width: 18 }}>
-            {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((l, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center' }}>{l}</div>
-            ))}
-          </div>
-          {hover && (
-            <div className="mono tab" style={{ position: 'absolute', top: -16, right: 0, fontSize: 'var(--fs-xs)', color: 'var(--text-2)' }}>
-              {hover.count} entries · {new Date(hover.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+
+              {/* Day-of-week labels — explicit row heights match tile rows exactly */}
+              <div style={{
+                position: 'absolute', left: 0, top: 0, height: gridH,
+                display: 'grid', gridTemplateRows: `repeat(7, ${TILE_PX}px)`, gap: TILE_GAP,
+                fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-4)', width: 18,
+              }}>
+                {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((l, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center' }}>{l}</div>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          )
+        })()}
 
         {/* Hourly histogram */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minHeight: 0 }}>

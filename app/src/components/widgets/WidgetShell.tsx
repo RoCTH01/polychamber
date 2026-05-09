@@ -1,5 +1,6 @@
 'use client'
 
+import { useContextMenu } from '@/components/ui/ContextMenu'
 import type { DragHandlers } from '@/types'
 
 interface Props {
@@ -17,9 +18,17 @@ interface Props {
 }
 
 export default function WidgetShell({ id, title, meta, tabs, tab, onTab, actions, dragHandlers, onClose, children, noPad }: Props) {
+  const { open: openMenu } = useContextMenu()
+
+  const handleHeaderContextMenu = (e: React.MouseEvent) => {
+    openMenu(e, [
+      { label: 'Hide widget', danger: true, action: onClose },
+    ])
+  }
+
   return (
     <div className="widget" data-widget={id} {...dragHandlers}>
-      <div className="widget-header">
+      <div className="widget-header" onContextMenu={handleHeaderContextMenu}>
         <div className="w-handle" />
         <div className="w-title">{title}</div>
         {meta && <div className="w-meta">· {meta}</div>}

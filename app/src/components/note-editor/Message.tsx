@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import MessageContent from './MessageContent'
+import { useContextMenu } from '@/components/ui/ContextMenu'
 import { SRC_LABEL, SRC_NAME } from '@/types'
 import type { Item, ItemMessage } from '@/types'
 
@@ -20,6 +21,7 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
   const [hover, setHover]           = useState(false)
   const [editing, setEditing]       = useState(false)
   const [editText, setEditText]     = useState(item.body)
+  const { open: openMenu }          = useContextMenu()
 
   const msg    = item.message
   const isMe   = msg?.who === 'me'
@@ -44,7 +46,17 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
   return (
     <div className={`ne-msg${grouped ? ' grouped' : ''}${isSrc ? ' src' : ''}`}
       onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}>
+      onMouseLeave={() => setHover(false)}
+      onContextMenu={e => {
+        const menuItems = [
+          ...(isMe ? [{ label: 'Edit', action: () => { setEditText(item.body); setEditing(true) } }] : []),
+          { label: 'Copy text', action: () => navigator.clipboard.writeText(item.body) },
+          { divider: true as const },
+          { label: 'Reply', disabled: true },
+          ...(isMe ? [{ divider: true as const }, { label: 'Delete', danger: true, action: onDelete }] : []),
+        ]
+        openMenu(e, menuItems)
+      }}>
 
       <div className="ne-avatar-col">
         {!grouped ? (
@@ -100,10 +112,7 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
 
       {hover && !editing && (
         <div className="ne-msg-tools">
-          <button title="React"  onClick={() => addReaction('👍')}>☺</button>
-          <button title="Edit"   onClick={() => { setEditText(item.body); setEditing(true) }}>✎</button>
-          <button title="Reply">↳</button>
-          {!isSrc && <button title="Delete" onClick={onDelete}>✕</button>}
+          <button title="React" onClick={() => addReaction('👍')}>☺</button>
         </div>
       )}
     </div>

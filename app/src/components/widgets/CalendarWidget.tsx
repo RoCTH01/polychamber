@@ -2,7 +2,9 @@
 
 import WidgetShell from './WidgetShell'
 import { useCalendarEvents } from '@/hooks/useCalendarEvents'
-import type { DragHandlers } from '@/types'
+import { useContextMenu } from '@/components/ui/ContextMenu'
+import { useAppStore } from '@/store/app'
+import type { CalendarEvent, DragHandlers } from '@/types'
 
 interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
 
@@ -31,7 +33,30 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
   weekStart.setHours(0, 0, 0, 0)
   const weekStartStr = weekStart.toISOString().split('T')[0]
 
-  const { events } = useCalendarEvents(weekStartStr)
+  const { events, createAndLinkNote, linkNote } = useCalendarEvents(weekStartStr)
+  const setOpenNote        = useAppStore(s => s.setOpenNoteId)
+  const setOpenNoteLinkedEvent = useAppStore(s => s.setOpenNoteLinkedEvent)
+  const { open: openMenu } = useContextMenu()
+
+  const handleEventContextMenu = (e: React.MouseEvent, ev: CalendarEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (ev.linkedNoteId) {
+      openMenu(e, [
+        { label: 'Open linked note', action: () => { setOpenNoteLinkedEvent(ev); setOpenNote(ev.linkedNoteId!) } },
+        { divider: true },
+        { label: 'Unlink note', danger: true, action: () => linkNote(ev.id, null) },
+      ])
+    } else {
+      openMenu(e, [
+        { label: 'New linked note', action: async () => {
+          const note = await createAndLinkNote(ev)
+          setOpenNoteLinkedEvent({ ...ev, linkedNoteId: note.id })
+          setOpenNote(note.id)
+        }},
+      ])
+    }
+  }
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart); d.setDate(weekStart.getDate() + i); return d
@@ -93,15 +118,24 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
                 const height = (Number(e.endHour) - Number(e.startHour)) * 30 - 2
                 const c      = kindColor(e.kind)
                 return (
-                  <div key={j} style={{
-                    position: 'absolute', left: 2, right: 2, top, height,
-                    background: c.bg, border: `1px solid ${c.border}`,
-                    borderLeft: `2px solid ${c.text}`,
-                    borderRadius: 3, padding: '3px 5px',
-                    fontSize: 'var(--fs-xs)', color: c.text, overflow: 'hidden',
-                    boxShadow: e.isCurrent ? '0 0 0 1px var(--accent)' : 'none',
-                  }}>
-                    <div className="mono tab" style={{ fontSize: 9, opacity: 0.85 }}>{fmtH(Number(e.startHour))}–{fmtH(Number(e.endHour))}</div>
+                  <div key={j}
+                    onContextMenu={ev => handleEventContextMenu(ev, e)}
+                    style={{
+                      position: 'absolute', left: 2, right: 2, top, height,
+                      background: c.bg, border: `1px solid ${c.border}`,
+                      borderLeft: `2px solid ${c.text}`,
+                      borderRadius: 3, padding: '3px 5px',
+                      fontSize: 'var(--fs-xs)', color: c.text, overflow: 'hidden',
+                      boxShadow: e.isCurrent ? '0 0 0 1px var(--accent)' : 'none',
+                      cursor: 'default',
+                    }}>
+                    <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div className="mono tab" style={{ fontSize: 9, opacity: 0.85 }}>{fmtH(Number(e.startHour))}–{fmtH(Number(e.endHour))}</div>
+                      {/* Note indicator dot — visible when the event has a linked note */}
+                      {e.linkedNoteId && (
+                        <div title="Has linked note" style={{ width: 5, height: 5, borderRadius: '50%', background: c.text, opacity: 0.7, flexShrink: 0, marginTop: 2 }} />
+                      )}
+                    </div>
                     <div style={{ fontWeight: 500, color: 'var(--text)', fontSize: 'var(--fs-xs)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.title}</div>
                   </div>
                 )

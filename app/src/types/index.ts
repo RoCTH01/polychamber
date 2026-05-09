@@ -84,6 +84,7 @@ export interface CalendarEvent {
   endHour: number
   weekStart: string
   isCurrent: boolean
+  linkedNoteId: string | null
 }
 
 export interface DragHandlers {

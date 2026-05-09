@@ -6,24 +6,59 @@
 |---|---|
 | **All 6 widgets** | Feed, Heatmap, Calendar, Funnel, Focus, Reminders — render live data, persist mutations |
 | **Note editor** | Full thread view, 4 message kinds, inline edit, reactions, tagging, auto-scroll |
-| **Workspace grid** | Drag-to-swap, layout persistence, widget visibility toggles |
+| **Workspace grid** | Drag-to-swap, free placement, drag-to-resize, layout persistence, widget visibility toggles |
 | **Settings modal** | Theme, density, font size — all live |
 | **Persistence layer** | All API routes, SWR hooks, optimistic updates, DB cascades |
 | **macOS shell** | Titlebar, traffic lights, Electron main + preload |
+| **Context menu system** | Right-click menus on all interactive items across the app |
+| **Calendar → note linking** | Events link to notes with full DB persistence and NoteEditor badge |
 
 ---
 
-## Phase 1 — Wire the existing shell buttons
-> Quick wins — ~1–2 days
+## Shipped this session
 
-Everything that renders but does nothing.
+### Grid & layout
+- **Widget area bug fixed** — `display: flex` on cell wrappers caused widgets not to fill their grid cell width; removed, now block-level fills correctly
+- **Viewport-proportional row heights** — rows clamp between 60px and 140px based on `(windowHeight - chrome) / totalRows`; fills the screen on sparse layouts, caps on large ones
+- **Drag-to-resize** — right edge (width), bottom edge (height), and SE corner (both) handles on every widget; snaps to grid units; persists via `updateLayout`
+- **Free placement drag** — widgets can be dropped anywhere on the grid, not just onto another widget; ghost preview cell shows valid drop target; overlap with another widget triggers swap; native browser drag ghost suppressed
+
+### Widget UX
+- **Funnel widget redesign** — replaced cryptic glyphs with labelled media-kind badges (PAPER / VIDEO / ARTICLE / THREAD), tab counts (`next 3`), empty state message
+- **Funnel archive button wired** — `✕` now calls `deleteItem()`
+- **Heatmap 90d/30d tile size fixed** — tiles were ballooning to fill widget width; 90d/30d now use fixed 11px tiles, 365d uses `minmax(0, 10px)` columns
+- **Heatmap tile overflow fixed** — removed `aspectRatio` from week columns and tiles; switched to a flat CSS grid with `grid-auto-flow: column` and explicit `TILE_PX` row heights; eliminates the "DAILY" label overlap bug caused by conflicting aspect ratios
+- **Heatmap DAILY label row** — reserved 14px header above the tile grid for the hover tooltip, preventing it from overlapping the KPI boxes
+
+### Interaction model
+- **Font size scale shifted up** — old "large" is now "small"; medium and large are proportionally bigger
+- **Context menu system** — shared `ContextMenuProvider` + `useContextMenu()` hook; portal-rendered, edge-detected, Escape/click-outside to close; 80ms scale-in animation
+- **Right-click menus wired across the app:**
+  - Feed rows: Open · Star/Unstar · Copy text · Delete
+  - Funnel items: Move to Next/Soon/Later · Mark done & remove
+  - Reminder items: Mark complete/incomplete · Delete
+  - Note editor messages: Edit · Copy text · Reply (stub) · Delete
+  - Widget headers: Hide widget
+- **Message hover toolbar** — stripped to just ☺ react button; all other actions moved to right-click
+
+### Calendar → note linking
+- **Schema migration** — `linked_note_id` (nullable FK → `items.id`, `ON DELETE SET NULL`) added to `calendar_events`
+- **PATCH `/api/calendar-events/[id]`** — new route to set/clear the link
+- **`createAndLinkNote`** — creates a root note titled with the event name + day, links it, revalidates SWR so page.tsx finds the new note immediately
+- **Calendar widget right-click** — "New linked note" / "Open linked note" / "Unlink note" depending on link state
+- **Note indicator dot** — small coloured dot on event blocks that have a linked note
+- **NoteEditor event badge** — tinted bar in the note header showing event title, day, and time when opened from a calendar event
+
+---
+
+## Phase 1 — Wire the remaining shell buttons
+> Quick wins — ~1 day remaining
 
 | Feature | What it needs |
 |---|---|
 | **+ New workspace** button | Modal to name it, create DB row, default layout |
 | **Calendar week nav** `‹ ›` | Track `weekOffset` state, shift the weekStart query param |
 | **Calendar inline note capture** | Wire Enter key → `createItem({ kind: 'note', ... })` |
-| **Funnel archive** `✓` button | Call `deleteItem()` or move to `later` queue |
 | **Focus session history** | Replace hardcoded rows with DB-fetched sessions for today |
 | **Widget refresh** `↻` buttons | Call `mutate()` on the relevant SWR key |
 | **Grid / scanlines toggles** | Move them into Settings modal |
@@ -117,9 +152,8 @@ Phase 3 is the highest-leverage work — without real data flowing in, the dashb
 | Sidebar | + New workspace | No action |
 | Calendar | ‹ › week navigation | No action |
 | Calendar | Inline note input | Not wired to DB |
-| Funnel | Archive ✓ | No action |
 | All widgets | Refresh ↻ | No action |
 | Note editor | More ⋯ | No action |
-| Note editor | Reply ↳ | No action |
+| Note editor | Reply ↳ | Stub in right-click menu, no action |
 | Composer | Attach ⌇ | No action |
 | Composer | Emoji ☺ | No action |

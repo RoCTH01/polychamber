@@ -5,16 +5,17 @@ import Message from './Message'
 import Composer from './Composer'
 import { useItems } from '@/hooks/useItems'
 import { SRC_LABEL, SRC_NAME } from '@/types'
-import type { Item } from '@/types'
+import type { Item, CalendarEvent } from '@/types'
 import '@/app/note-editor.css'
 
 interface Props {
   note: Item
   onClose: () => void
   onUpdate: (item: Item) => void
+  linkedEvent?: CalendarEvent | null
 }
 
-export default function NoteEditor({ note, onClose, onUpdate }: Props) {
+export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [localTags, setLocalTags] = useState(note.tags)
   const [tagInput, setTagInput]   = useState('')
@@ -60,6 +61,17 @@ export default function NoteEditor({ note, onClose, onUpdate }: Props) {
     <aside className="note-editor">
       {/* Header */}
       <header className="ne-head">
+        {/* Calendar event badge — shown when this note is linked to an event */}
+        {linkedEvent && (
+          <div className="ne-event-badge mono">
+            <span>📅</span>
+            <span>{linkedEvent.title}</span>
+            <span style={{ opacity: 0.5 }}>·</span>
+            <span>{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][linkedEvent.dayOfWeek]}</span>
+            <span style={{ opacity: 0.5 }}>·</span>
+            <span>{String(Math.floor(linkedEvent.startHour)).padStart(2,'0')}:{String(Math.round((linkedEvent.startHour % 1) * 60)).padStart(2,'0')}–{String(Math.floor(linkedEvent.endHour)).padStart(2,'0')}:{String(Math.round((linkedEvent.endHour % 1) * 60)).padStart(2,'0')}</span>
+          </div>
+        )}
         <div className="ne-head-title">
           {note.src && <span className={`src-icon src-${note.src}`} style={{ width: 22, height: 22, fontSize: 10, borderRadius: 5 }}>{SRC_LABEL[note.src]}</span>}
           <div className="ne-head-stack">

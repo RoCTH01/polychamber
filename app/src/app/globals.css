@@ -19,9 +19,10 @@
 [data-density="comfy"]    { --gap: 10px; --pad: 14px; --row-h: 32px; --fs-xs: 11px;   --fs-sm: 12px;   --fs-md: 13px;   --fs-lg: 15px; --fs-xl: 19px; }
 [data-density="spacious"] { --gap: 14px; --pad: 18px; --row-h: 36px; --fs-xs: 11.5px; --fs-sm: 12.5px; --fs-md: 14px;   --fs-lg: 16px; --fs-xl: 22px; }
 
-/* Font size overrides — applied on top of density */
-[data-font-size="small"]  { --fs-xs: 9px;  --fs-sm: 10px;   --fs-md: 11px;   --fs-lg: 12.5px; --fs-xl: 15px; }
-[data-font-size="large"]  { --fs-xs: 12px; --fs-sm: 13.5px; --fs-md: 15px;   --fs-lg: 17px;   --fs-xl: 22px; }
+/* Font size overrides — scoped to .app so they beat density rules on the same element */
+.app[data-font-size="small"]  { --fs-xs: 12px;   --fs-sm: 13.5px; --fs-md: 15px;   --fs-lg: 17px;   --fs-xl: 22px; }
+.app[data-font-size="medium"] { --fs-xs: 13.5px; --fs-sm: 15px;   --fs-md: 17px;   --fs-lg: 19px;   --fs-xl: 25px; }
+.app[data-font-size="large"]  { --fs-xs: 15px;   --fs-sm: 17px;   --fs-md: 19px;   --fs-lg: 22px;   --fs-xl: 28px; }
 
 /* ── Themes ──────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
@@ -302,7 +303,111 @@ html, body {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: var(--gap);
-  grid-auto-rows: minmax(60px, 60px);
+  /* grid-template-rows is set inline — fixed px rows clamped to viewport */
+}
+
+/* ── Grid cell wrapper ───────────────────────────────────────────────────── */
+.grid-cell {
+  position: relative;  /* anchor for absolute resize handles */
+}
+
+/* ── Drag ghost preview ──────────────────────────────────────────────────── */
+/* Shown at the drop target when dragging to empty space */
+.ghost-cell {
+  pointer-events: none;   /* must not intercept drag events */
+  border: 1.5px dashed var(--accent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  z-index: 5;
+  /* Animate in so it doesn't flash on every cursor movement */
+  animation: ghost-in 0.08s ease;
+}
+@keyframes ghost-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Resize handles ──────────────────────────────────────────────────────── */
+.resize-handle {
+  position: absolute;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.15s;
+  /* Prevent handles from triggering drag on the widget */
+  -webkit-user-drag: none;
+}
+/* Show handles when hovering the cell (not just the handle itself) */
+.grid-cell:hover .resize-handle { opacity: 1; }
+
+/* Right-edge handle — changes width */
+.resize-handle.resize-e {
+  right: -4px;
+  top: 15%;
+  bottom: 15%;
+  width: 8px;
+  cursor: ew-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.resize-handle.resize-e::after {
+  content: '';
+  width: 3px;
+  height: 28px;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.55;
+}
+
+/* Bottom-edge handle — changes height */
+.resize-handle.resize-s {
+  bottom: -4px;
+  left: 15%;
+  right: 15%;
+  height: 8px;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.resize-handle.resize-s::after {
+  content: '';
+  height: 3px;
+  width: 28px;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.55;
+}
+
+/* Corner handle (SE) — changes both */
+.resize-handle.resize-se {
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+.resize-handle.resize-se::before,
+.resize-handle.resize-se::after {
+  content: '';
+  position: absolute;
+  background: var(--accent);
+  border-radius: 1px;
+  opacity: 0.6;
+}
+/* Horizontal bar of corner grip */
+.resize-handle.resize-se::before {
+  bottom: 3px;
+  right: 0;
+  width: 10px;
+  height: 2px;
+}
+/* Vertical bar of corner grip */
+.resize-handle.resize-se::after {
+  bottom: 0;
+  right: 3px;
+  width: 2px;
+  height: 10px;
 }
 
 /* ── Widget ──────────────────────────────────────────────────────────────── */
@@ -419,6 +524,14 @@ html, body {
 [data-theme="light"] .src-mn { background: oklch(0.65 0.10  90 / 0.18); color: oklch(0.45 0.13  90); }
 [data-theme="light"] .src-rd { background: oklch(0.55 0.13  30 / 0.10); color: oklch(0.5  0.16  30); }
 
+/* ── Funnel rows ─────────────────────────────────────────────────────────── */
+.funnel-row { cursor: default; transition: background 0.08s; }
+.funnel-row:hover { background: var(--panel-2); }
+/* Actions fade in on row hover; always visible when a button is focused */
+.funnel-row .funnel-actions { opacity: 0; transition: opacity 0.12s; }
+.funnel-row:hover .funnel-actions,
+.funnel-row .funnel-actions:focus-within { opacity: 1; }
+
 /* ── Feed rows ───────────────────────────────────────────────────────────── */
 .feed-row { cursor: default; transition: background 0.08s; }
 .feed-row:hover { background: var(--panel-2); }
@@ -426,6 +539,50 @@ html, body {
   background: var(--accent-soft);
   border-left: 2px solid var(--accent);
   padding-left: calc(var(--pad) - 2px) !important;
+}
+
+/* ── Context menu ────────────────────────────────────────────────────────── */
+.ctx-menu {
+  position: fixed;
+  z-index: 9000;
+  min-width: 192px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 4px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
+  user-select: none;
+  animation: ctx-in 0.07s ease;
+}
+@keyframes ctx-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  cursor: default;
+  transition: background 0.06s;
+}
+.ctx-item:hover:not(.disabled) { background: var(--panel-hi); }
+.ctx-item.danger               { color: var(--bad); }
+.ctx-item.disabled             { color: var(--text-4); pointer-events: none; }
+.ctx-check {
+  width: 12px;
+  font-size: 10px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.ctx-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 3px 4px;
 }
 
 /* ── Settings modal ──────────────────────────────────────────────────────── */
