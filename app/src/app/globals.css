@@ -282,6 +282,19 @@ html, body {
 .toolbar .tb-icon { width: 12px; height: 12px; flex-shrink: 0; }
 .toolbar .tb-divider { width: 1px; height: 16px; background: var(--border-subtle); }
 
+/* ── Toolbar responsive collapse ─────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .toolbar .tb-label { display: none; }
+  .toolbar .tb-search { min-width: 180px; }
+}
+
+@media (max-width: 800px) {
+  .toolbar .tb-btn:not(.tb-btn-capture) { display: none; }
+  .toolbar .tb-divider { display: none; }
+  .toolbar .tb-status { display: none; }
+  .toolbar .tb-search { flex: 1; min-width: 0; }
+}
+
 /* ── Workspace ───────────────────────────────────────────────────────────── */
 .workspace {
   flex: 1;

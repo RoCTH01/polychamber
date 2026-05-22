@@ -15,13 +15,13 @@ export default function Toolbar() {
 
   return (
     <div className="toolbar">
-      <button className="tb-btn"><Icon name="grid" /> Layout</button>
-      <button className="tb-btn"><Icon name="filter" /> All sources</button>
-      <button className="tb-btn"><Icon name="clock" /> Today</button>
+      <button className="tb-btn"><Icon name="grid" /><span className="tb-label"> Layout</span></button>
+      <button className="tb-btn"><Icon name="filter" /><span className="tb-label"> All sources</span></button>
+      <button className="tb-btn"><Icon name="clock" /><span className="tb-label"> Today</span></button>
       <div className="tb-divider" />
-      <button className="tb-btn"><Icon name="plus" /> Capture</button>
+      <button className="tb-btn tb-btn-capture"><Icon name="plus" /><span className="tb-label"> Capture</span></button>
       <div className="tb-divider" />
-      <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-4)', letterSpacing: '0.06em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, flexShrink: 1 }}>
+      <span className="mono tb-status" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-4)', letterSpacing: '0.06em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, flexShrink: 1 }}>
         SOURCES <span style={{ color: 'var(--accent)' }}>5/5</span>
         <span style={{ margin: '0 8px', color: 'var(--text-4)' }}>·</span>
         SYNC <span style={{ color: 'var(--text-2)' }}>live</span>
