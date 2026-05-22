@@ -83,11 +83,11 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
       }>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         {/* Day headers */}
-        <div style={{ display: 'grid', gridTemplateColumns: '32px repeat(7, 1fr)', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
-          <div />
+        <div className="cal-day-headers" style={{ display: 'grid', gridTemplateColumns: '32px repeat(7, 1fr)', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
+          <div className="cal-time-col" />
           {days.map((d, i) => (
             <div key={i} style={{ padding: '6px 8px', borderLeft: '1px solid var(--border-subtle)', background: i === todayIdx ? 'var(--accent-soft)' : 'transparent' }}>
-              <div className="mono" style={{ fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.08em' }}>
+              <div className="mono cal-day-name" style={{ fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.08em' }}>
                 {d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
               </div>
               <div className="mono tab" style={{ fontSize: 'var(--fs-md)', fontWeight: 500, color: i === todayIdx ? 'var(--accent)' : 'var(--text)' }}>
@@ -98,9 +98,9 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
         </div>
 
         {/* Time grid */}
-        <div style={{ flex: 1, position: 'relative', display: 'grid', gridTemplateColumns: '32px repeat(7, 1fr)', minHeight: 0, overflow: 'auto' }}>
+        <div className="cal-time-grid" style={{ flex: 1, position: 'relative', display: 'grid', gridTemplateColumns: '32px repeat(7, 1fr)', minHeight: 0, overflow: 'auto' }}>
           {/* Hour gutter */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="cal-time-col" style={{ display: 'flex', flexDirection: 'column' }}>
             {Array.from({ length: HOURS }, (_, h) => (
               <div key={h} style={{ height: 30, fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-4)', paddingRight: 4, textAlign: 'right', paddingTop: 2, borderTop: '1px solid var(--border-subtle)' }}>
                 {String(START_HOUR + h).padStart(2, '0')}

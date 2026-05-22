@@ -615,6 +615,21 @@ html, body {
   .hm-sources { display: none !important; }
 }
 
+/* ── Calendar widget — container queries ─────────────────────────────────── */
+@container widget (max-width: 279px) {
+  .cal-time-col { display: none; }
+  .cal-day-headers { grid-template-columns: repeat(7, 1fr) !important; }
+  .cal-time-grid   { grid-template-columns: repeat(7, 1fr) !important; }
+  .cal-day-name    { overflow: hidden; max-width: 1ch; letter-spacing: 0; }
+}
+
+@container widget (min-width: 280px) {
+  .cal-time-col    { display: flex; }
+  .cal-day-headers { grid-template-columns: 32px repeat(7, 1fr) !important; }
+  .cal-time-grid   { grid-template-columns: 32px repeat(7, 1fr) !important; }
+  .cal-day-name    { max-width: none; overflow: visible; }
+}
+
 /* ── Context menu ────────────────────────────────────────────────────────── */
 .ctx-menu {
   position: fixed;
