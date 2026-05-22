@@ -65,7 +65,7 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="mono" style={{ fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.08em' }}>NOW</div>
-            <div style={{ fontSize: 'var(--fs-md)', color: 'var(--text)', fontWeight: 500, marginBottom: 2 }}>Agents prototype</div>
+            <div style={{ fontSize: 'var(--fs-md)', color: 'var(--text)', fontWeight: 500, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Agents prototype</div>
             <div className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>session 3 of 4</div>
             <div className="row gap-4" style={{ marginTop: 8 }}>
               <button onClick={running ? handlePause : () => setRunning(true)}

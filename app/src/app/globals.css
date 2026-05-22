@@ -447,6 +447,7 @@ html, body {
   border-bottom: 1px solid var(--border-subtle);
   background: var(--panel);
   gap: 8px; cursor: grab; user-select: none;
+  overflow: hidden;
 }
 .widget-header:active { cursor: grabbing; }
 .widget-header .w-handle {
@@ -464,7 +465,7 @@ html, body {
   font-size: var(--fs-sm); font-family: var(--font-ui); font-weight: 500;
   letter-spacing: 0.01em; color: var(--text-2); flex-shrink: 0;
 }
-.widget-header .w-meta { font-size: var(--fs-xs); font-family: var(--font-mono); color: var(--text-4); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.widget-header .w-meta { font-size: var(--fs-xs); font-family: var(--font-mono); color: var(--text-4); margin-left: 4px; font-variant-numeric: tabular-nums; flex-shrink: 3; min-width: 0; overflow: hidden; white-space: nowrap; }
 .widget-header .w-actions { margin-left: auto; display: flex; gap: 2px; align-items: center; }
 .widget-header .w-act {
   display: flex; align-items: center; justify-content: center;
@@ -474,7 +475,7 @@ html, body {
   font-family: var(--font-mono); font-size: 11px;
 }
 .widget-header .w-act:hover { background: var(--panel-hi); color: var(--text); }
-.widget-header .w-tabs { display: flex; gap: 0; margin-left: 4px; }
+.widget-header .w-tabs { display: flex; gap: 0; margin-left: 4px; flex-shrink: 1; min-width: 0; overflow: hidden; }
 .widget-header .w-tab {
   font-family: var(--font-ui); font-size: var(--fs-sm);
   padding: 0 7px; height: 18px;
@@ -499,10 +500,6 @@ html, body {
 
 /* ── Global responsive text rules ───────────────────────────────────────── */
 .w-title {
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  min-width: 0;
-}
-.w-meta {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   min-width: 0;
 }
@@ -576,6 +573,8 @@ html, body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+    width: 100%;
   }
   .feed-row .row.gap-8 { display: none; }
   .feed-row .row.gap-4 { display: none; }
@@ -588,6 +587,7 @@ html, body {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    min-width: 0;
   }
   .feed-row .row.gap-4 { display: none; }
 }
