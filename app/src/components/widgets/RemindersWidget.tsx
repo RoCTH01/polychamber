@@ -37,7 +37,7 @@ export default function RemindersWidget({ id, dragHandlers, onClose }: Props) {
   }
 
   return (
-    <WidgetShell id={id} title="REMINDERS" meta={`${openCount} open`}
+    <WidgetShell id={id} title="Reminders" meta={`${openCount} open`}
       tabs={['open', 'all']} tab={filter} onTab={setFilter}
       dragHandlers={dragHandlers} onClose={onClose} noPad>
       <div style={{ padding: '6px 0' }}>

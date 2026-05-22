@@ -73,7 +73,7 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
   }
 
   return (
-    <WidgetShell id={id} title="CALENDAR" meta={`${monthLabel} · wk ${getISOWeek(now)}`}
+    <WidgetShell id={id} title="Calendar" meta={`${monthLabel} · wk ${getISOWeek(now)}`}
       dragHandlers={dragHandlers} onClose={onClose} noPad
       actions={
         <>

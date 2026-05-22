@@ -45,7 +45,7 @@ export default function FunnelWidget({ id, dragHandlers, onClose }: Props) {
 
   return (
     <WidgetShell
-      id={id} title="FUNNEL" meta={`${items.length} queued`}
+      id={id} title="Funnel" meta={`${items.length} queued`}
       tabs={tabLabels}
       tab={tabLabels[QUEUE_ORDER.indexOf(tag)]}
       onTab={t => setTag(QUEUE_ORDER[tabLabels.indexOf(t)])}

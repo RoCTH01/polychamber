@@ -85,7 +85,7 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
   const hourMax = Math.max(...hourly)
 
   return (
-    <WidgetShell id={id} title="ACTIVITY" meta={`${view} · all sources`}
+    <WidgetShell id={id} title="Activity" meta={`${view} · all sources`}
       tabs={['365d', '90d', '30d']} tab={view} onTab={setView}
       dragHandlers={dragHandlers} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>

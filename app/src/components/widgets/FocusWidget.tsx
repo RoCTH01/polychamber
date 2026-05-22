@@ -49,7 +49,7 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
   ]
 
   return (
-    <WidgetShell id={id} title="FOCUS" meta={running ? '● running' : '○ paused'}
+    <WidgetShell id={id} title="Focus" meta={running ? '● running' : '○ paused'}
       dragHandlers={dragHandlers} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}>
         <div className="row gap-12" style={{ alignItems: 'center' }}>

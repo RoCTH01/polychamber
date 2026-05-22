@@ -33,7 +33,7 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
   }
 
   return (
-    <WidgetShell id={id} title="FEED" meta={`${filtered.length} entries · live`}
+    <WidgetShell id={id} title="Feed" meta={`${filtered.length} entries · live`}
       tabs={SOURCES} tab={src} onTab={setSrc}
       dragHandlers={dragHandlers} onClose={onClose} noPad>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
