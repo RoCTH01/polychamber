@@ -630,6 +630,19 @@ html, body {
   .cal-day-name    { max-width: none; overflow: visible; }
 }
 
+/* ── Focus widget — container queries ────────────────────────────────────── */
+@container widget (max-width: 239px) {
+  .focus-layout    { align-items: center; }
+  .focus-ring      { width: 60px !important; height: 60px !important; }
+  .focus-sessions  { display: none; }
+}
+
+@container widget (min-width: 240px) {
+  .focus-layout    { align-items: flex-start; }
+  .focus-ring      { width: 76px !important; height: 76px !important; }
+  .focus-sessions  { display: block; }
+}
+
 /* ── Context menu ────────────────────────────────────────────────────────── */
 .ctx-menu {
   position: fixed;

@@ -51,9 +51,9 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
   return (
     <WidgetShell id={id} title="Focus" meta={running ? '● running' : '○ paused'}
       dragHandlers={dragHandlers} onClose={onClose}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}>
+      <div className="focus-layout" style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}>
         <div className="row gap-12" style={{ alignItems: 'center' }}>
-          <svg width="76" height="76" viewBox="0 0 76 76">
+          <svg className="focus-ring" width="76" height="76" viewBox="0 0 76 76">
             <circle cx="38" cy="38" r={R} fill="none" stroke="var(--panel-hi)" strokeWidth="4" />
             <circle cx="38" cy="38" r={R} fill="none" stroke="var(--accent)" strokeWidth="4"
               strokeLinecap="round" strokeDasharray={`${dash} ${C}`} transform="rotate(-90 38 38)" />
@@ -80,7 +80,7 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
+        <div className="focus-sessions" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
           <div className="row" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
             <span className="mono" style={{ fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.08em' }}>TODAY · DEEP WORK</span>
             <span className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-2)' }}>{Math.floor(todayMin / 60)}h {todayMin % 60}m</span>
