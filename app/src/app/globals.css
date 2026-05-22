@@ -287,6 +287,7 @@ html, body {
   flex: 1;
   position: relative;
   overflow: auto;
+  min-width: 480px;
   background:
     linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 24px 24px,
     linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 24px 24px,
@@ -472,6 +473,8 @@ html, body {
 .widget-header .w-tab.active { color: var(--text); background: var(--panel-hi); }
 
 .widget-body {
+  container-type: inline-size;
+  container-name: widget;
   flex: 1; overflow: auto;
   padding: var(--pad);
   scrollbar-width: thin; scrollbar-color: var(--border) transparent;
@@ -480,6 +483,17 @@ html, body {
 .widget-body.no-pad { padding: 0; }
 .widget-body::-webkit-scrollbar { width: 8px; height: 8px; }
 .widget-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
+
+/* ── Global responsive text rules ───────────────────────────────────────── */
+.w-title {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+}
+.w-meta {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+}
+.mono.tab { white-space: nowrap; }
 
 /* ── Generic UI bits ─────────────────────────────────────────────────────── */
 .row { display: flex; align-items: center; }
