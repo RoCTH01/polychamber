@@ -63,7 +63,7 @@ function NoteRow({ note, first, active, onClick, onContextMenu }: { note: Item; 
         </span>
         {note.starred && <span style={{ color: 'var(--accent)', fontSize: 11 }}>★</span>}
       </div>
-      <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text)', lineHeight: 1.55, textWrap: 'pretty' } as React.CSSProperties}>
+      <div className="feed-body" style={{ fontSize: 'var(--fs-sm)', color: 'var(--text)', lineHeight: 1.55, textWrap: 'pretty' } as React.CSSProperties}>
         {note.body}
       </div>
       {note.tags.length > 0 && (
