@@ -57,19 +57,19 @@ function NoteRow({ note, first, active, onClick, onContextMenu }: { note: Item; 
     }} onClick={onClick} onContextMenu={onContextMenu}>
       <div className="row gap-8">
         {note.src && <span className={`src-icon src-${note.src}`}>{SRC_LABEL[note.src]}</span>}
-        <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-2)', fontWeight: 500 }}>{note.author}</span>
-        <span className="mono tab muted-2" style={{ fontSize: 'var(--fs-xs)', marginLeft: 'auto' }}>
+        <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-2)', fontWeight: 500 }}>{note.author}</span>
+        <span className="tab muted-2" style={{ fontSize: 'var(--fs-xs)', marginLeft: 'auto', fontFamily: 'var(--font-mono)' }}>
           {new Date(note.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
         </span>
-        {note.starred && <span style={{ color: 'var(--warn)', fontSize: 11 }}>★</span>}
+        {note.starred && <span style={{ color: 'var(--accent)', fontSize: 11 }}>★</span>}
       </div>
-      <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text)', lineHeight: 1.45, textWrap: 'pretty' } as React.CSSProperties}>
+      <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text)', lineHeight: 1.55, textWrap: 'pretty' } as React.CSSProperties}>
         {note.body}
       </div>
       {note.tags.length > 0 && (
         <div className="row gap-4" style={{ flexWrap: 'wrap' }}>
           {note.tags.map(t => (
-            <span key={t} className="mono" style={{ fontSize: 9.5, color: 'var(--text-3)' }}>#{t}</span>
+            <span key={t} className="chip">{t}</span>
           ))}
         </div>
       )}
