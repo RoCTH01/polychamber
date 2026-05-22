@@ -431,7 +431,7 @@ html, body {
   height: var(--row-h); flex-shrink: 0;
   padding: 0 var(--pad);
   border-bottom: 1px solid var(--border-subtle);
-  background: var(--panel-2);
+  background: var(--panel);
   gap: 8px; cursor: grab; user-select: none;
 }
 .widget-header:active { cursor: grabbing; }
@@ -447,8 +447,8 @@ html, body {
 .widget-header .w-handle::before { box-shadow: 0 3px 0 currentColor, 0 6px 0 currentColor, 0 9px 0 currentColor; }
 .widget-header:hover .w-handle { opacity: 0.8; }
 .widget-header .w-title {
-  font-size: var(--fs-xs); font-family: var(--font-mono); font-weight: 500;
-  letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-2); flex-shrink: 0;
+  font-size: var(--fs-sm); font-family: var(--font-ui); font-weight: 500;
+  letter-spacing: 0.01em; color: var(--text-2); flex-shrink: 0;
 }
 .widget-header .w-meta { font-size: var(--fs-xs); font-family: var(--font-mono); color: var(--text-4); margin-left: 4px; font-variant-numeric: tabular-nums; }
 .widget-header .w-actions { margin-left: auto; display: flex; gap: 2px; align-items: center; }
@@ -462,7 +462,7 @@ html, body {
 .widget-header .w-act:hover { background: var(--panel-hi); color: var(--text); }
 .widget-header .w-tabs { display: flex; gap: 0; margin-left: 4px; }
 .widget-header .w-tab {
-  font-family: var(--font-mono); font-size: var(--fs-xs);
+  font-family: var(--font-ui); font-size: var(--fs-sm);
   padding: 0 7px; height: 18px;
   display: flex; align-items: center;
   color: var(--text-3); border-radius: 3px;
