@@ -69,11 +69,11 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
             <div className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>session 3 of 4</div>
             <div className="row gap-4" style={{ marginTop: 8 }}>
               <button onClick={running ? handlePause : () => setRunning(true)}
-                style={{ height: 22, padding: '0 10px', background: running ? 'var(--panel-hi)' : 'var(--accent)', color: running ? 'var(--text)' : 'var(--bg)', border: `1px solid ${running ? 'var(--border)' : 'var(--accent)'}`, borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-xs)', cursor: 'default', letterSpacing: '0.04em' }}>
+                style={{ height: 22, padding: '0 10px', background: running ? 'var(--panel-hi)' : 'var(--accent)', color: running ? 'var(--text)' : 'var(--bg)', border: `1px solid ${running ? 'var(--border)' : 'var(--accent)'}`, borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-xs)', cursor: 'default', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
                 {running ? '❚❚ PAUSE' : '▶ RESUME'}
               </button>
               <button onClick={() => setSeconds(0)}
-                style={{ height: 22, padding: '0 10px', background: 'transparent', color: 'var(--text-3)', border: '1px solid var(--border-subtle)', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-xs)', cursor: 'default', letterSpacing: '0.04em' }}>
+                style={{ height: 22, padding: '0 10px', background: 'transparent', color: 'var(--text-3)', border: '1px solid var(--border-subtle)', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-xs)', cursor: 'default', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
                 ↻ RESET
               </button>
             </div>
