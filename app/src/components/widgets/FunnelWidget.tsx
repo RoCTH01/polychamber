@@ -72,7 +72,7 @@ export default function FunnelWidget({ id, dragHandlers, onClose }: Props) {
                   <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
                     {f.body}
                   </div>
-                  <div className="mono row gap-4" style={{ fontSize: 9, color: 'var(--text-4)', marginTop: 2 }}>
+                  <div className="funnel-meta mono row gap-4" style={{ fontSize: 9, color: 'var(--text-4)', marginTop: 2 }}>
                     <span>{f.funnel?.source}</span>
                     <span style={{ opacity: 0.4 }}>·</span>
                     <span className="tab">{f.funnel?.est}</span>

@@ -643,6 +643,31 @@ html, body {
   .focus-sessions  { display: block; }
 }
 
+/* ── Funnel widget — container queries ───────────────────────────────────── */
+@container widget (max-width: 219px) {
+  .funnel-row  { padding: 6px 8px; }
+  .funnel-meta { display: none; }
+}
+
+@container widget (min-width: 220px) {
+  .funnel-meta { display: flex; }
+}
+
+/* ── Reminders widget — container queries ────────────────────────────────── */
+@container widget (max-width: 219px) {
+  .rem-text { font-size: var(--fs-xs) !important; }
+}
+
+@container widget (min-width: 220px) {
+  .rem-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal !important;
+  }
+}
+
 /* ── Context menu ────────────────────────────────────────────────────────── */
 .ctx-menu {
   position: fixed;

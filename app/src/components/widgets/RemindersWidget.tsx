@@ -63,7 +63,7 @@ export default function RemindersWidget({ id, dragHandlers, onClose }: Props) {
                   flexShrink: 0, color: r.reminder?.done ? 'var(--bg)' : 'transparent', fontSize: 9,
                 }}>✓</button>
                 <span className="dot" style={{ background: r.reminder?.priority === 1 ? 'var(--bad)' : r.reminder?.priority === 2 ? 'var(--warn)' : 'var(--text-4)' }} />
-                <span style={{ flex: 1, fontSize: 'var(--fs-sm)', color: r.reminder?.done ? 'var(--text-4)' : 'var(--text)', textDecoration: r.reminder?.done ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span className="rem-text" style={{ flex: 1, fontSize: 'var(--fs-sm)', color: r.reminder?.done ? 'var(--text-4)' : 'var(--text)', textDecoration: r.reminder?.done ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.body}
                 </span>
               </div>
