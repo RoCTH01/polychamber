@@ -59,17 +59,17 @@
 }
 .ne-tag-chip {
   display: inline-flex; align-items: center; gap: 2px;
-  padding: 1px 4px 1px 6px;
-  background: var(--panel-hi); border: 1px solid var(--border-subtle); border-radius: 3px;
-  font-family: var(--font-mono); font-size: 10.5px; color: var(--text-2);
+  padding: 1px 6px 1px 8px;
+  background: var(--panel-hi); border: 1px solid var(--border-subtle); border-radius: 5px;
+  font-family: var(--font-ui); font-size: 11px; color: var(--text-2);
 }
 .ne-tag-chip:hover { border-color: var(--border); }
 .ne-tag-x { background: transparent; border: 0; padding: 0; width: 12px; height: 12px; color: var(--text-4); cursor: default; font-size: 12px; line-height: 1; }
 .ne-tag-x:hover { color: var(--bad); }
 .ne-tag-input {
   background: transparent; border: 1px dashed var(--border-subtle); outline: none;
-  padding: 1px 6px; font-family: var(--font-mono); font-size: 10.5px;
-  color: var(--text-2); width: 60px; border-radius: 3px;
+  padding: 1px 6px; font-family: var(--font-ui); font-size: 11px;
+  color: var(--text-2); width: 60px; border-radius: 5px;
 }
 .ne-tag-input:focus { border-color: var(--accent-line); border-style: solid; }
 
@@ -102,7 +102,7 @@
 .ne-msg-via { font-size: 9.5px; color: var(--text-4); letter-spacing: 0.04em; }
 .ne-msg-t { font-size: 10px; color: var(--text-4); font-variant-numeric: tabular-nums; margin-left: auto; }
 
-.ne-text { font-size: 13px; color: var(--text); line-height: 1.45; white-space: pre-wrap; word-wrap: break-word; text-wrap: pretty; }
+.ne-text { font-size: 13.5px; color: var(--text); line-height: 1.65; white-space: pre-wrap; word-wrap: break-word; text-wrap: pretty; }
 .ne-msg.src .ne-text { color: var(--text-2); border-left: 2px solid var(--border); padding-left: 8px; margin-left: -2px; font-style: italic; }
 .ne-msg.src .ne-msg-head .ne-msg-author { color: var(--text-2); }
 
