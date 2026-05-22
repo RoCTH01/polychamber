@@ -491,10 +491,9 @@ html, body {
 
 .chip {
   display: inline-flex; align-items: center; gap: 4px;
-  height: 16px; padding: 0 6px; border-radius: 3px;
+  height: 18px; padding: 0 8px; border-radius: 5px;
   background: var(--panel-hi);
-  font-family: var(--font-mono); font-size: 9.5px; color: var(--text-2);
-  letter-spacing: 0.04em; text-transform: uppercase;
+  font-family: var(--font-ui); font-size: var(--fs-sm); color: var(--text-2);
   border: 1px solid var(--border-subtle);
 }
 .chip.accent { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
@@ -526,7 +525,7 @@ html, body {
 
 /* ── Funnel rows ─────────────────────────────────────────────────────────── */
 .funnel-row { cursor: default; transition: background 0.08s; }
-.funnel-row:hover { background: var(--panel-2); }
+.funnel-row:hover { background: oklch(from var(--accent) l c h / 0.05); }
 /* Actions fade in on row hover; always visible when a button is focused */
 .funnel-row .funnel-actions { opacity: 0; transition: opacity 0.12s; }
 .funnel-row:hover .funnel-actions,
@@ -534,7 +533,7 @@ html, body {
 
 /* ── Feed rows ───────────────────────────────────────────────────────────── */
 .feed-row { cursor: default; transition: background 0.08s; }
-.feed-row:hover { background: var(--panel-2); }
+.feed-row:hover { background: oklch(from var(--accent) l c h / 0.05); }
 .feed-row.active {
   background: var(--accent-soft);
   border-left: 2px solid var(--accent);
@@ -641,8 +640,8 @@ html, body {
   display: flex; flex-direction: column; gap: 12px;
 }
 .settings-section-label {
-  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600;
-  letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--text-4);
 }
 
