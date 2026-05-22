@@ -603,6 +603,18 @@ html, body {
   .feed-row .row.gap-4 { display: flex; flex-wrap: wrap; }
 }
 
+/* ── Heatmap widget — container queries ──────────────────────────────────── */
+@container widget (max-width: 219px) {
+  .hm-kpi-row > *:nth-child(n+3) { display: none; }
+  .hm-hourly  { display: none !important; }
+  .hm-sources { display: none !important; }
+}
+
+@container widget (min-width: 220px) and (max-width: 399px) {
+  .hm-hourly  { display: none !important; }
+  .hm-sources { display: none !important; }
+}
+
 /* ── Context menu ────────────────────────────────────────────────────────── */
 .ctx-menu {
   position: fixed;

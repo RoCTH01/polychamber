@@ -90,7 +90,7 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
       dragHandlers={dragHandlers} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
         {/* KPI row */}
-        <div className="row gap-12" style={{ flexShrink: 0 }}>
+        <div className="hm-kpi-row row gap-12" style={{ flexShrink: 0 }}>
           <Kpi label="TOTAL"     value={total.toLocaleString()} />
           <Kpi label="STREAK"    value={`${streak}d`} accent />
           <Kpi label="DAILY AVG" value={(total / Math.max(allDays.length, 1)).toFixed(1)} />
@@ -174,7 +174,7 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
         })()}
 
         {/* Hourly histogram */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minHeight: 0 }}>
+        <div className="hm-hourly" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minHeight: 0 }}>
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)', letterSpacing: '0.06em' }}>HOURLY · LAST 30D</span>
             <span className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-4)' }}>peak 14:00</span>
@@ -195,7 +195,7 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
         </div>
 
         {/* Source breakdown */}
-        <div style={{ flexShrink: 0, borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
+        <div className="hm-sources" style={{ flexShrink: 0, borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
           <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
             {SRC_BREAKDOWN.map(s => (
               <div key={s.src} className="row gap-6">
