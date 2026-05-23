@@ -15,6 +15,10 @@ export default function SettingsModal() {
   const setTheme       = useAppStore(s => s.setTheme)
   const setDensity     = useAppStore(s => s.setDensity)
   const setFontSize    = useAppStore(s => s.setFontSize)
+  const showGrid    = useAppStore(s => s.showGrid)
+  const scanlines   = useAppStore(s => s.scanlines)
+  const setShowGrid   = useAppStore(s => s.setShowGrid)
+  const setScanlines  = useAppStore(s => s.setScanlines)
   const setSettingsOpen = useAppStore(s => s.setSettingsOpen)
 
   // Close on Escape
@@ -104,6 +108,29 @@ export default function SettingsModal() {
               {fontSize === 'small'  && 'Smallest text — fits the most content on screen.'}
               {fontSize === 'medium' && 'Default text size — works well for most displays.'}
               {fontSize === 'large'  && 'Larger text — easier to read on high-DPI or large monitors.'}
+            </div>
+          </div>
+
+          {/* Display */}
+          <div className="settings-section">
+            <div className="settings-section-label">Display</div>
+            <div className="seg">
+              <button
+                className={`seg-btn${showGrid ? ' active' : ''}`}
+                onClick={() => setShowGrid(!showGrid)}>
+                Grid overlay
+              </button>
+              <button
+                className={`seg-btn${scanlines ? ' active' : ''}`}
+                onClick={() => setScanlines(!scanlines)}>
+                Scanlines
+              </button>
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-4)', marginTop: -4 }}>
+              {showGrid && !scanlines && 'Grid lines visible on workspace background.'}
+              {scanlines && 'CRT scanline overlay on top of all content.'}
+              {!showGrid && !scanlines && 'Clean workspace — no overlays.'}
+              {showGrid && scanlines && 'Grid and scanlines both active.'}
             </div>
           </div>
 
