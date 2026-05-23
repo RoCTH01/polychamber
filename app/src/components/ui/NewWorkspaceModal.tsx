@@ -25,9 +25,13 @@ export default function NewWorkspaceModal({ onClose }: Props) {
   const handleSubmit = async () => {
     if (!name.trim() || loading) return
     setLoading(true)
-    await createWorkspace(name.trim())
-    setActiveWorkspace(name.trim())
-    onClose()
+    try {
+      const ws = await createWorkspace(name.trim())
+      setActiveWorkspace(ws.name)
+      onClose()
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
