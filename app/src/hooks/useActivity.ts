@@ -5,7 +5,7 @@ import type { ActivityDay } from '@/types'
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export function useActivity(days: number = 365) {
-  const { data, isLoading } = useSWR<{ activity: ActivityDay[] }>(`/api/activity?days=${days}`, fetcher)
+  const { data, isLoading, mutate } = useSWR<{ activity: ActivityDay[] }>(`/api/activity?days=${days}`, fetcher)
 
   // Pad to exactly `days` entries (fill missing dates with count=0)
   const activity = useMemo<ActivityDay[]>(() => {
@@ -22,5 +22,5 @@ export function useActivity(days: number = 365) {
     return result
   }, [data?.activity, days])
 
-  return { activity, isLoading }
+  return { activity, isLoading, mutate }
 }

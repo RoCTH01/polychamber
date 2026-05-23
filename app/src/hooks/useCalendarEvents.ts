@@ -43,5 +43,5 @@ export function useCalendarEvents(weekStart?: string) {
     return item
   }
 
-  return { events: data?.events ?? [], isLoading, linkNote, createAndLinkNote }
+  return { events: data?.events ?? [], isLoading, linkNote, createAndLinkNote, mutate }
 }
