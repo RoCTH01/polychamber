@@ -4,10 +4,16 @@
 
 | Area | Details |
 |---|---|
-| **All 6 widgets** | Feed, Heatmap, Calendar, Funnel, Focus, Reminders — render live data, persist mutations |
+| **All 6 widgets** | Feed, Heatmap, Calendar, Funnel, Focus, Reminders — render live data, persist mutations, refresh ↻ wired |
 | **Note editor** | Full thread view, 4 message kinds, inline edit, reactions, tagging, auto-scroll |
-| **Workspace grid** | Drag-to-swap, free placement, drag-to-resize, layout persistence, widget visibility toggles |
-| **Settings modal** | Theme, density, font size — all live |
+| **Workspace grid** | Drag-to-swap, free placement, drag-to-resize, layout persistence; right-click blank area to add widget |
+| **Layout as truth** | Widget visibility driven entirely by `ws.layout` — no global Zustand flags; close removes from array |
+| **Widget picker** | Layout button opens dropdown to add any of 6 widget types; multiple instances per workspace supported |
+| **New workspace** | Sidebar `+` opens modal to name + create workspace, switches to it immediately |
+| **Calendar** | Week navigation `‹ ›` with `weekOffset` state; inline note capture on Enter |
+| **Focus** | Live session history from DB (today's completed sessions + running timer) |
+| **Settings modal** | Theme, density, font size, grid overlay, scanlines — all live |
+| **Toolbar status strip** | Live NOTES count · LAST note time · INBOX count (untagged, unstarred) |
 | **Persistence layer** | All API routes, SWR hooks, optimistic updates, DB cascades |
 | **macOS shell** | Titlebar, traffic lights, Electron main + preload |
 | **Context menu system** | Right-click menus on all interactive items across the app |
@@ -16,6 +22,18 @@
 ---
 
 ## Shipped this session
+
+### Phase 1 — Shell wiring
+- **Layout-as-truth** — removed 6 Zustand widget visibility flags; `ws.layout` array is now the sole source of truth for what's visible per workspace
+- **Widget picker** — Layout button in toolbar opens a picker dropdown to add any of the 6 widget types; each instance gets a UUID so multiple of the same type can coexist
+- **New workspace** — sidebar `+` opens a modal; `POST /api/workspaces` creates the DB row with an empty layout, then the app switches to it
+- **Widget refresh** — ↻ button in every widget header triggers SWR `mutate` on that widget's data source
+- **Calendar week nav** — `‹ ›` buttons shift `weekOffset` state; `weekStartStr` computed via `weekStartFor()` utility
+- **Calendar note capture** — inline input submits a root note on Enter via `createItem`
+- **Focus live history** — session rows now come from DB (`useItems({ kind: 'focus_session' })`), filtered to today's date
+- **Settings display toggles** — grid overlay and scanlines moved into Settings modal with mutual-exclusive hint text
+- **Toolbar live status strip** — NOTES / LAST / INBOX pulled from SWR in real time
+- **Right-click blank workspace** — context menu to add any widget type directly from the grid background
 
 ### Grid & layout
 - **Widget area bug fixed** — `display: flex` on cell wrappers caused widgets not to fill their grid cell width; removed, now block-level fills correctly
@@ -49,20 +67,33 @@
 - **Note indicator dot** — small coloured dot on event blocks that have a linked note
 - **NoteEditor event badge** — tinted bar in the note header showing event title, day, and time when opened from a calendar event
 
+### Visual design refresh
+- **Warm neutral color system** — dark theme shifted to near-neutral warm base (`oklch` hue 60) with amber accent (`--accent: oklch(0.75 0.14 60)`); light and high-contrast themes updated to match
+- **Dark theme luminance raised** — slightly lighter dark base for better readability without losing depth
+- **Pure gray neutrals** — removed residual chroma from background/border tokens (chroma → 0); amber accent stays warm
+- **Widget titles sentence case** — all widget headers converted from ALL CAPS to sentence case across every widget
+- **Widget header typography** — switched from mono to Inter, lighter background (`--panel` instead of `--panel-2`)
+- **Chip and tag typography** — lowercase Inter pills with rounded corners; `settings-section-label` switched to Inter
+- **Warm hover tints** — feed and funnel row hovers now use a subtle amber tint instead of cool gray
+- **Note editor** — body text enlarged to 13.5px with 1.65 line-height; tag chips switched to Inter lowercase pills
+- **Feed widget** — author and tags use Inter (not mono); starred icon uses amber accent; body line-height loosened to 1.55
+
+### Responsive widgets (container queries)
+- **Container query foundation** — `container-type: inline-size` on `.widget-body`; global text-overflow rules added; workspace min-width set
+- **Toolbar collapse** — button labels wrapped in `.tb-label` spans and hidden via `@media` at narrow window widths
+- **Feed widget** — three content tiers (sm/md/lg) via `@container`; tags and body text hidden at narrow widths
+- **Heatmap widget** — histogram and sources section hidden at sm; KPI label wrapping fixed
+- **Calendar widget** — time column hidden at sm; day abbreviations shortened at narrow widths
+- **Focus widget** — sessions list hidden at sm; progress ring shrinks at narrow widths
+- **Funnel + Reminders** — meta text hidden at sm via container queries
+- **Widget header overflow** — fixed header text truncation and overflow at all sizes
+- **Tab and button text** — added `white-space: nowrap` globally to prevent text wrapping in tabs and buttons
+
 ---
 
-## Phase 1 — Wire the remaining shell buttons
-> Quick wins — ~1 day remaining
+## Phase 1 — Wire the remaining shell buttons ✓ Complete
 
-| Feature | What it needs |
-|---|---|
-| **+ New workspace** button | Modal to name it, create DB row, default layout |
-| **Calendar week nav** `‹ ›` | Track `weekOffset` state, shift the weekStart query param |
-| **Calendar inline note capture** | Wire Enter key → `createItem({ kind: 'note', ... })` |
-| **Focus session history** | Replace hardcoded rows with DB-fetched sessions for today |
-| **Widget refresh** `↻` buttons | Call `mutate()` on the relevant SWR key |
-| **Grid / scanlines toggles** | Move them into Settings modal |
-| **Toolbar status strip** | Pull real counts from SWR (total notes, last `createdAt`, inbox count) |
+All Phase 1 shell buttons are now wired. See "Shipped this session" above.
 
 ---
 
@@ -143,16 +174,8 @@ Phase 3 is the highest-leverage work — without real data flowing in, the dashb
 
 | Location | Button | Status |
 |---|---|---|
-| Toolbar | Layout | No action |
-| Toolbar | All sources | No action |
-| Toolbar | Today | No action |
-| Toolbar | + Capture | No action |
-| Toolbar | Status strip (SOURCES / SYNC / INBOX) | Static text |
-| Toolbar | Search bar / ⌘K | Shortcut registered, no modal |
-| Sidebar | + New workspace | No action |
-| Calendar | ‹ › week navigation | No action |
-| Calendar | Inline note input | Not wired to DB |
-| All widgets | Refresh ↻ | No action |
+| Toolbar | + Capture | No action (Phase 2+) |
+| Toolbar | Search bar / ⌘K | Shortcut registered, no modal (Phase 2) |
 | Note editor | More ⋯ | No action |
 | Note editor | Reply ↳ | Stub in right-click menu, no action |
 | Composer | Attach ⌇ | No action |
