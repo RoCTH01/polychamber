@@ -33,7 +33,7 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
   weekStart.setHours(0, 0, 0, 0)
   const weekStartStr = weekStart.toISOString().split('T')[0]
 
-  const { events, createAndLinkNote, linkNote } = useCalendarEvents(weekStartStr)
+  const { events, createAndLinkNote, linkNote, mutate } = useCalendarEvents(weekStartStr)
   const setOpenNote        = useAppStore(s => s.setOpenNoteId)
   const setOpenNoteLinkedEvent = useAppStore(s => s.setOpenNoteLinkedEvent)
   const { open: openMenu } = useContextMenu()
@@ -74,7 +74,7 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
 
   return (
     <WidgetShell id={id} title="Calendar" meta={`${monthLabel} · wk ${getISOWeek(now)}`}
-      dragHandlers={dragHandlers} onClose={onClose} noPad
+      dragHandlers={dragHandlers} onClose={onClose} onRefresh={mutate} noPad
       actions={
         <>
           <button className="w-act" onClick={e => e.stopPropagation()}>‹</button>

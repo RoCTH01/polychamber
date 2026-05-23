@@ -13,7 +13,7 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
   const [running, setRunning] = useState(true)
   const [seconds, setSeconds] = useState(28 * 60 + 17)
   const [sessionStart] = useState(() => new Date())
-  const { items: sessions, createItem } = useItems({ kind: 'focus_session' })
+  const { items: sessions, createItem, mutate } = useItems({ kind: 'focus_session' })
 
   useEffect(() => {
     if (!running) return
@@ -50,7 +50,7 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
 
   return (
     <WidgetShell id={id} title="Focus" meta={running ? '● running' : '○ paused'}
-      dragHandlers={dragHandlers} onClose={onClose}>
+      dragHandlers={dragHandlers} onClose={onClose} onRefresh={mutate}>
       <div className="focus-layout" style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}>
         <div className="row gap-12" style={{ alignItems: 'center' }}>
           <svg className="focus-ring" width="76" height="76" viewBox="0 0 76 76">

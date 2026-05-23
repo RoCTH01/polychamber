@@ -13,7 +13,7 @@ const DUE_ORDER = ['today', 'tomorrow', 'this wk', 'next wk']
 export default function RemindersWidget({ id, dragHandlers, onClose }: Props) {
   const [filter, setFilter] = useState('open')
   const [newBody, setNewBody] = useState('')
-  const { items, updateItem, createItem, deleteItem } = useItems({ kind: 'reminder' })
+  const { items, updateItem, createItem, deleteItem, mutate } = useItems({ kind: 'reminder' })
   const { open: openMenu } = useContextMenu()
 
   const visible  = filter === 'open' ? items.filter(r => !r.reminder?.done) : items
@@ -39,7 +39,7 @@ export default function RemindersWidget({ id, dragHandlers, onClose }: Props) {
   return (
     <WidgetShell id={id} title="Reminders" meta={`${openCount} open`}
       tabs={['open', 'all']} tab={filter} onTab={setFilter}
-      dragHandlers={dragHandlers} onClose={onClose} noPad>
+      dragHandlers={dragHandlers} onClose={onClose} onRefresh={mutate} noPad>
       <div style={{ padding: '6px 0' }}>
         {DUE_ORDER.filter(k => groups[k]).map(k => (
           <div key={k}>

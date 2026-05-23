@@ -18,7 +18,7 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
   const setOpenNote = useAppStore(s => s.setOpenNoteId)
   const { open: openMenu } = useContextMenu()
 
-  const { items, updateItem, deleteItem } = useItems({ parentId: 'null' })
+  const { items, updateItem, deleteItem, mutate } = useItems({ parentId: 'null' })
   const filtered = src === 'All' ? items : items.filter(n => n.src && SRC_LABEL[n.src] === src)
 
   const handleContextMenu = (e: React.MouseEvent, note: Item) => {
@@ -35,7 +35,7 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
   return (
     <WidgetShell id={id} title="Feed" meta={`${filtered.length} entries · live`}
       tabs={SOURCES} tab={src} onTab={setSrc}
-      dragHandlers={dragHandlers} onClose={onClose} noPad>
+      dragHandlers={dragHandlers} onClose={onClose} onRefresh={mutate} noPad>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {filtered.map((n, i) => (
           <NoteRow key={n.id} note={n} first={i === 0}

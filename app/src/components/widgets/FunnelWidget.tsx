@@ -21,7 +21,7 @@ const DEFAULT_KIND = { label: 'LINK', color: 'var(--text-3)' }
 
 export default function FunnelWidget({ id, dragHandlers, onClose }: Props) {
   const [tag, setTag] = useState<QueueTag>('next')
-  const { items, updateItem, deleteItem } = useItems({ kind: 'funnel_item' })
+  const { items, updateItem, deleteItem, mutate } = useItems({ kind: 'funnel_item' })
   const { open: openMenu } = useContextMenu()
 
   const byQueue = (q: QueueTag) => items.filter(i => i.funnel?.queueTag === q)
@@ -49,7 +49,7 @@ export default function FunnelWidget({ id, dragHandlers, onClose }: Props) {
       tabs={tabLabels}
       tab={tabLabels[QUEUE_ORDER.indexOf(tag)]}
       onTab={t => setTag(QUEUE_ORDER[tabLabels.indexOf(t)])}
-      dragHandlers={dragHandlers} onClose={onClose} noPad
+      dragHandlers={dragHandlers} onClose={onClose} onRefresh={mutate} noPad
     >
       {filtered.length === 0 ? (
         <div style={{ padding: '24px var(--pad)', textAlign: 'center', fontSize: 'var(--fs-xs)', color: 'var(--text-4)', fontFamily: 'var(--font-mono)' }}>

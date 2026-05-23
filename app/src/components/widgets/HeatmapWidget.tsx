@@ -18,11 +18,11 @@ const SRC_LABEL: Record<string, string> = { tw: 'TW', ob: 'OB', dc: 'DC', mn: 'M
 export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
   const heatmapScale = useAppStore(s => s.heatmapScale)
   const [view, setView] = useState('365d')
-  const days365 = useActivity(365)
-  const days90  = useActivity(90)
-  const days30  = useActivity(30)
+  const { activity: days365, mutate: mutate365 } = useActivity(365)
+  const { activity: days90,  mutate: mutate90  } = useActivity(90)
+  const { activity: days30,  mutate: mutate30  } = useActivity(30)
 
-  const allDays = view === '90d' ? days90.activity : view === '30d' ? days30.activity : days365.activity
+  const allDays = view === '90d' ? days90 : view === '30d' ? days30 : days365
   const [hover, setHover] = useState<ActivityDay | null>(null)
 
   const weeks = useMemo(() => {
@@ -87,7 +87,8 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
   return (
     <WidgetShell id={id} title="Activity" meta={`${view} · all sources`}
       tabs={['365d', '90d', '30d']} tab={view} onTab={setView}
-      dragHandlers={dragHandlers} onClose={onClose}>
+      dragHandlers={dragHandlers} onClose={onClose}
+      onRefresh={() => { mutate365(); mutate90(); mutate30() }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
         {/* KPI row */}
         <div className="hm-kpi-row row gap-12" style={{ flexShrink: 0 }}>
