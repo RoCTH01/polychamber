@@ -1,14 +1,17 @@
 'use client'
 
+import { useState } from 'react'
 import { useAppStore } from '@/store/app'
 import { useWorkspaces } from '@/hooks/useWorkspaces'
+import NewWorkspaceModal from '@/components/ui/NewWorkspaceModal'
 
 export default function Sidebar() {
-  const activeWs       = useAppStore(s => s.activeWorkspace)
-  const setActiveWs    = useAppStore(s => s.setActiveWorkspace)
-  const settingsOpen   = useAppStore(s => s.settingsOpen)
+  const activeWs        = useAppStore(s => s.activeWorkspace)
+  const setActiveWs     = useAppStore(s => s.setActiveWorkspace)
+  const settingsOpen    = useAppStore(s => s.settingsOpen)
   const setSettingsOpen = useAppStore(s => s.setSettingsOpen)
-  const { workspaces } = useWorkspaces()
+  const { workspaces }  = useWorkspaces()
+  const [modalOpen, setModalOpen] = useState(false)
 
   return (
     <div className="sidebar">
@@ -22,7 +25,7 @@ export default function Sidebar() {
           <span className="sb-tip">{ws.name}</span>
         </div>
       ))}
-      <div className="sb-add" title="New workspace">+</div>
+      <div className="sb-add" title="New workspace" onClick={() => setModalOpen(true)}>+</div>
 
       <div className="sb-foot">
         <div className="sb-divider" />
@@ -33,6 +36,8 @@ export default function Sidebar() {
           ⚙
         </button>
       </div>
+
+      {modalOpen && <NewWorkspaceModal onClose={() => setModalOpen(false)} />}
     </div>
   )
 }
