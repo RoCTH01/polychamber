@@ -43,10 +43,10 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
     .filter(s => s.focus && new Date(s.focus.startedAt).toDateString() === new Date().toDateString())
     .reduce((a, s) => a + (s.focus?.durationMinutes ?? 0), 0) + Math.floor(seconds / 60)
 
-  const prevSessions = [
-    { label: 'Eval harness', minutes: 92 },
-    { label: 'Reading',      minutes: 34 },
-  ]
+  const today = new Date().toDateString()
+  const completedToday = sessions
+    .filter(s => s.focus && new Date(s.focus.startedAt).toDateString() === today)
+    .map(s => ({ label: s.body, minutes: s.focus!.durationMinutes ?? 0 }))
 
   return (
     <WidgetShell id={id} title="Focus" meta={running ? '● running' : '○ paused'}
@@ -85,7 +85,7 @@ export default function FocusWidget({ id, dragHandlers, onClose }: Props) {
             <span className="mono" style={{ fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.08em' }}>TODAY · DEEP WORK</span>
             <span className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-2)' }}>{Math.floor(todayMin / 60)}h {todayMin % 60}m</span>
           </div>
-          {[...prevSessions, { label: 'Agents prototype (live)', minutes: Math.floor(seconds / 60), live: true }].map((s, i) => (
+          {[...completedToday, { label: 'Agents prototype (live)', minutes: Math.floor(seconds / 60), live: true }].map((s, i) => (
             <div key={i} className="row gap-8" style={{ marginBottom: 3 }}>
               <span style={{ flex: 1, fontSize: 'var(--fs-xs)', color: (s as { live?: boolean }).live ? 'var(--accent)' : 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.label}</span>
               <div style={{ width: 80, height: 4, background: 'var(--panel-hi)', borderRadius: 2, overflow: 'hidden' }}>
