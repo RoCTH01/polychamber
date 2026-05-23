@@ -20,13 +20,6 @@ interface AppState {
   // Drag-to-swap
   drag: { id: string } | null
   dragOver: string | null
-  // Widget visibility
-  showHeatmap: boolean
-  showFeed: boolean
-  showCalendar: boolean
-  showFunnel: boolean
-  showFocus: boolean
-  showReminders: boolean
   // Actions
   setTheme: (t: Theme) => void
   setDensity: (d: Density) => void
@@ -40,7 +33,6 @@ interface AppState {
   setOpenNoteLinkedEvent: (e: CalendarEvent | null) => void
   setDrag: (drag: { id: string } | null) => void
   setDragOver: (id: string | null) => void
-  setWidgetVisibility: (key: keyof AppState, v: boolean) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -56,12 +48,6 @@ export const useAppStore = create<AppState>((set) => ({
   settingsOpen: false,
   drag: null,
   dragOver: null,
-  showHeatmap: true,
-  showFeed: true,
-  showCalendar: true,
-  showFunnel: true,
-  showFocus: true,
-  showReminders: true,
   setTheme:            (theme)           => set({ theme }),
   setDensity:          (density)         => set({ density }),
   setFontSize:         (fontSize)        => set({ fontSize }),
@@ -74,5 +60,4 @@ export const useAppStore = create<AppState>((set) => ({
   setDrag:             (drag)            => set({ drag }),
   setDragOver:         (dragOver)        => set({ dragOver }),
   setSettingsOpen:     (settingsOpen)    => set({ settingsOpen }),
-  setWidgetVisibility: (key, v)          => set({ [key]: v } as Partial<AppState>),
 }))

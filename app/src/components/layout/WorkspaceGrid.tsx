@@ -20,15 +20,6 @@ const WIDGET_MAP: Record<WidgetType, React.ComponentType<{ id: string; dragHandl
   reminders: RemindersWidget,
 }
 
-const VISIBILITY_KEY: Record<WidgetType, keyof ReturnType<typeof useAppStore.getState>> = {
-  heatmap:   'showHeatmap',
-  feed:      'showFeed',
-  calendar:  'showCalendar',
-  funnel:    'showFunnel',
-  focus:     'showFocus',
-  reminders: 'showReminders',
-}
-
 type ResizeDir = 'e' | 's' | 'se'
 
 interface ResizeActive {
@@ -81,16 +72,10 @@ export default function WorkspaceGrid() {
   const drag         = useAppStore(s => s.drag)
   const setDrag      = useAppStore(s => s.setDrag)
   const setDragOver  = useAppStore(s => s.setDragOver)
-  const setWidgetVis = useAppStore(s => s.setWidgetVisibility)
-  const store        = useAppStore()
-
   const { workspaces, updateLayout } = useWorkspaces()
   const ws = workspaces.find(w => w.name === activeWs)
 
-  const visible = (ws?.layout ?? []).filter(it => {
-    const key = VISIBILITY_KEY[it.type]
-    return key ? (store[key] as boolean) : true
-  })
+  const visible = ws?.layout ?? []
 
   // ── Resize state ─────────────────────────────────────────────────────────
   const gridRef          = useRef<HTMLDivElement>(null)
@@ -341,10 +326,9 @@ export default function WorkspaceGrid() {
                   onDragStart: onDragStart(it.id),
                   onDragEnd,
                 }}
-                onClose={() => setWidgetVis(
-                  VISIBILITY_KEY[it.type] as keyof ReturnType<typeof useAppStore.getState>,
-                  false,
-                )}
+                onClose={() => {
+                  if (ws) updateLayout(ws.id, ws.layout.filter(l => l.id !== it.id))
+                }}
               />
 
               {/* Resize handles */}
