@@ -34,6 +34,7 @@ export function useWorkspaces() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
     })
+    if (!res.ok) throw new Error(`Failed to create workspace: ${res.status}`)
     const ws: Workspace = await res.json()
     await mutate()
     return ws
