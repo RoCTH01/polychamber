@@ -1,9 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import WidgetShell from './WidgetShell'
 import { useCalendarEvents } from '@/hooks/useCalendarEvents'
 import { useContextMenu } from '@/components/ui/ContextMenu'
 import { useAppStore } from '@/store/app'
+import { weekStartFor } from '@/lib/utils'
+import { useItems } from '@/hooks/useItems'
 import type { CalendarEvent, DragHandlers } from '@/types'
 
 interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
@@ -26,14 +29,15 @@ function getISOWeek(d: Date) {
 }
 
 export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
+  const [weekOffset, setWeekOffset] = useState(0)
+  const [noteInput, setNoteInput] = useState('')
+
+  const weekStartStr = weekStartFor(weekOffset)
   const now = new Date()
-  const dow = (now.getDay() + 6) % 7
-  const weekStart = new Date(now)
-  weekStart.setDate(now.getDate() - dow)
-  weekStart.setHours(0, 0, 0, 0)
-  const weekStartStr = weekStart.toISOString().split('T')[0]
+  const weekStart = new Date(weekStartStr + 'T00:00:00')
 
   const { events, createAndLinkNote, linkNote, mutate } = useCalendarEvents(weekStartStr)
+  const { createItem } = useItems({ kind: 'note', parentId: 'null' })
   const setOpenNote        = useAppStore(s => s.setOpenNoteId)
   const setOpenNoteLinkedEvent = useAppStore(s => s.setOpenNoteLinkedEvent)
   const { open: openMenu } = useContextMenu()
@@ -77,8 +81,8 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
       dragHandlers={dragHandlers} onClose={onClose} onRefresh={mutate} noPad
       actions={
         <>
-          <button className="w-act" onClick={e => e.stopPropagation()}>‹</button>
-          <button className="w-act" onClick={e => e.stopPropagation()}>›</button>
+          <button className="w-act" onClick={e => { e.stopPropagation(); setWeekOffset(o => o - 1) }}>‹</button>
+          <button className="w-act" onClick={e => { e.stopPropagation(); setWeekOffset(o => o + 1) }}>›</button>
         </>
       }>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -153,7 +157,18 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
         <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '6px var(--pad)', background: 'var(--panel-2)', flexShrink: 0 }}>
           <div className="row gap-6">
             <span className="mono" style={{ fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.08em' }}>+ NOTE @ NOW</span>
-            <input placeholder="Quick note…" style={{ flex: 1, height: 20, background: 'transparent', border: 0, outline: 'none', fontFamily: 'var(--font-ui)', fontSize: 'var(--fs-sm)', color: 'var(--text)' }} />
+            <input
+              placeholder="Quick note…"
+              value={noteInput}
+              onChange={e => setNoteInput(e.target.value)}
+              onKeyDown={async e => {
+                if (e.key === 'Enter' && noteInput.trim()) {
+                  await createItem({ kind: 'note', body: noteInput.trim() })
+                  setNoteInput('')
+                }
+              }}
+              style={{ flex: 1, height: 20, background: 'transparent', border: 0, outline: 'none', fontFamily: 'var(--font-ui)', fontSize: 'var(--fs-sm)', color: 'var(--text)' }}
+            />
             <span className="chip">⏎</span>
           </div>
         </div>
