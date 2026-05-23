@@ -9,7 +9,17 @@ import CalendarWidget  from '../widgets/CalendarWidget'
 import FunnelWidget    from '../widgets/FunnelWidget'
 import FocusWidget     from '../widgets/FocusWidget'
 import RemindersWidget from '../widgets/RemindersWidget'
+import { useContextMenu } from '@/components/ui/ContextMenu'
 import type { WidgetType, DragHandlers } from '@/types'
+
+const WIDGET_TYPES_LIST: { type: WidgetType; label: string }[] = [
+  { type: 'heatmap',   label: 'Heatmap' },
+  { type: 'feed',      label: 'Feed' },
+  { type: 'calendar',  label: 'Calendar' },
+  { type: 'funnel',    label: 'Funnel' },
+  { type: 'focus',     label: 'Focus' },
+  { type: 'reminders', label: 'Reminders' },
+]
 
 const WIDGET_MAP: Record<WidgetType, React.ComponentType<{ id: string; dragHandlers: DragHandlers; onClose: () => void }>> = {
   heatmap:   HeatmapWidget,
@@ -72,7 +82,8 @@ export default function WorkspaceGrid() {
   const drag         = useAppStore(s => s.drag)
   const setDrag      = useAppStore(s => s.setDrag)
   const setDragOver  = useAppStore(s => s.setDragOver)
-  const { workspaces, updateLayout } = useWorkspaces()
+  const { workspaces, updateLayout, addWidget } = useWorkspaces()
+  const { open: openMenu } = useContextMenu()
   const ws = workspaces.find(w => w.name === activeWs)
 
   const visible = ws?.layout ?? []
@@ -280,6 +291,14 @@ export default function WorkspaceGrid() {
     setDragCell(null)
   }
 
+  const handleGridContextMenu = useCallback((e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.widget')) return
+    openMenu(e, WIDGET_TYPES_LIST.map(({ type, label }) => ({
+      label: `Add ${label}`,
+      action: () => addWidget(ws!.id, ws!.layout, type),
+    })))
+  }, [openMenu, addWidget, ws])
+
   if (!ws) return null
 
   return (
@@ -288,6 +307,7 @@ export default function WorkspaceGrid() {
         className="grid"
         ref={gridRef}
         style={{ gridTemplateRows: `repeat(${totalRows}, ${rowPx}px)` }}
+        onContextMenu={handleGridContextMenu}
         onDragOver={onGridDragOver}
         onDrop={onGridDrop}
       >
