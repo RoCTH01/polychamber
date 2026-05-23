@@ -66,13 +66,13 @@ export default function Toolbar() {
           }}>
             {WIDGET_TYPES.map(({ type, label, icon }) => (
               <button key={type}
-                onClick={() => { if (ws) addWidget(ws.id, ws.layout, type); setPickerOpen(false) }}
+                onClick={() => { if (ws) { addWidget(ws.id, ws.layout, type) } setPickerOpen(false) }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   width: '100%', padding: '6px 12px',
                   background: 'transparent', border: 0,
                   color: 'var(--text)', fontFamily: 'var(--font-ui)',
-                  fontSize: 'var(--fs-sm)', cursor: 'default', textAlign: 'left',
+                  fontSize: 'var(--fs-sm)', cursor: 'pointer', textAlign: 'left',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--panel-hi)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}

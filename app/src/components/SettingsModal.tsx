@@ -128,7 +128,7 @@ export default function SettingsModal() {
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-4)', marginTop: -4 }}>
               {showGrid && !scanlines && 'Grid lines visible on workspace background.'}
-              {scanlines && 'CRT scanline overlay on top of all content.'}
+              {scanlines && !showGrid && 'CRT scanline overlay on top of all content.'}
               {!showGrid && !scanlines && 'Clean workspace — no overlays.'}
               {showGrid && scanlines && 'Grid and scanlines both active.'}
             </div>
