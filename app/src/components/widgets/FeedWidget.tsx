@@ -5,6 +5,7 @@ import WidgetShell from './WidgetShell'
 import { useItems } from '@/hooks/useItems'
 import { useAppStore } from '@/store/app'
 import { useContextMenu } from '@/components/ui/ContextMenu'
+import { useWorkspaces } from '@/hooks/useWorkspaces'
 import { SRC_LABEL } from '@/types'
 import type { Item, DragHandlers } from '@/types'
 
@@ -14,9 +15,12 @@ const SOURCES = ['All', 'Me', 'New', 'TW', 'DC', 'OB', 'MN', 'RD']
 
 export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
   const [src, setSrc] = useState('All')
+  const activeWs = useAppStore(s => s.activeWorkspace)
   const openNoteId  = useAppStore(s => s.openNoteId)
   const setOpenNote = useAppStore(s => s.setOpenNoteId)
   const { open: openMenu } = useContextMenu()
+  const { workspaces, addWidget } = useWorkspaces()
+  const ws = workspaces.find(w => w.name === activeWs)
 
   const { items, updateItem, deleteItem, mutate } = useItems({ parentId: 'null' })
 
@@ -31,6 +35,18 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
     await updateItem(note.id, {
       funnel: { mediaKind: 'article', source: note.src ?? 'me', est: '', queueTag },
     } as Partial<Item>)
+  }
+
+  const handleTagContextMenu = (e: React.MouseEvent, tag: string) => {
+    e.stopPropagation()
+    openMenu(e, [
+      {
+        label: `Track #${tag} in heatmap`,
+        action: () => {
+          if (ws) addWidget(ws.id, ws.layout, 'heatmap', { mode: 'tag', tag })
+        },
+      },
+    ])
   }
 
   const handleContextMenu = (e: React.MouseEvent, note: Item) => {
@@ -58,7 +74,8 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
           <NoteRow key={n.id} note={n} first={i === 0}
             active={openNoteId === n.id}
             onClick={() => setOpenNote(openNoteId === n.id ? null : n.id)}
-            onContextMenu={e => handleContextMenu(e, n)} />
+            onContextMenu={e => handleContextMenu(e, n)}
+            onTagContextMenu={handleTagContextMenu} />
         ))}
         {filtered.length === 0 && (
           <div style={{ padding: '24px var(--pad)', textAlign: 'center', fontSize: 'var(--fs-xs)', color: 'var(--text-4)', fontFamily: 'var(--font-mono)' }}>
@@ -70,7 +87,12 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
   )
 }
 
-function NoteRow({ note, first, active, onClick, onContextMenu }: { note: Item; first: boolean; active: boolean; onClick: () => void; onContextMenu: (e: React.MouseEvent) => void }) {
+function NoteRow({ note, first, active, onClick, onContextMenu, onTagContextMenu }: {
+  note: Item; first: boolean; active: boolean
+  onClick: () => void
+  onContextMenu: (e: React.MouseEvent) => void
+  onTagContextMenu: (e: React.MouseEvent, tag: string) => void
+}) {
   return (
     <div className={`feed-row${active ? ' active' : ''}`} style={{
       padding: 'calc(var(--pad) * 0.85) var(--pad)',
@@ -93,7 +115,7 @@ function NoteRow({ note, first, active, onClick, onContextMenu }: { note: Item; 
       {note.tags.length > 0 && (
         <div className="row gap-4" style={{ flexWrap: 'wrap' }}>
           {note.tags.map(t => (
-            <span key={t} className="chip">{t}</span>
+            <span key={t} className="chip" onContextMenu={e => { e.stopPropagation(); onTagContextMenu(e, t) }}>{t}</span>
           ))}
         </div>
       )}
