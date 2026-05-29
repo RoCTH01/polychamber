@@ -6,7 +6,8 @@ import { and, gte, sql } from 'drizzle-orm'
 export async function GET(request: NextRequest) {
   const sp   = request.nextUrl.searchParams
   const tag  = sp.get('tag')
-  const days = Math.min(parseInt(sp.get('days') ?? '90'), 365)
+  const rawDays = parseInt(sp.get('days') ?? '')
+  const days = Math.min(isNaN(rawDays) ? 90 : rawDays, 365)
 
   if (!tag) return NextResponse.json({ error: 'tag required' }, { status: 400 })
 
