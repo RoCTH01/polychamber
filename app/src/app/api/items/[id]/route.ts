@@ -16,8 +16,8 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
   if (reminder) await db.update(itemReminder).set(reminder).where(eq(itemReminder.itemId, id))
   if (funnel) {
     await db.insert(itemFunnel)
-      .values({ itemId: id, mediaKind: funnel.mediaKind ?? 'article', source: funnel.source ?? 'me', est: funnel.est ?? '', queueTag: funnel.queueTag })
-      .onConflictDoUpdate({ target: itemFunnel.itemId, set: { mediaKind: funnel.mediaKind ?? 'article', source: funnel.source ?? 'me', est: funnel.est ?? '', queueTag: funnel.queueTag } })
+      .values({ itemId: id, mediaKind: funnel.mediaKind ?? 'article', source: funnel.source ?? 'me', est: funnel.est ?? '', queueTag: funnel.queueTag ?? 'later' })
+      .onConflictDoUpdate({ target: itemFunnel.itemId, set: { mediaKind: funnel.mediaKind ?? 'article', source: funnel.source ?? 'me', est: funnel.est ?? '', queueTag: funnel.queueTag ?? 'later' } })
   }
   if (focus)    await db.update(itemFocus).set(focus).where(eq(itemFocus.itemId, id))
   if (message)  await db.update(itemMessage).set(message).where(eq(itemMessage.itemId, id))
