@@ -21,7 +21,7 @@ const DEFAULT_KIND = { label: 'LINK', color: 'var(--text-3)' }
 
 export default function FunnelWidget({ id, dragHandlers, onClose }: Props) {
   const [tag, setTag] = useState<QueueTag>('next')
-  const { items, updateItem, deleteItem, mutate } = useItems({ kind: 'funnel_item' })
+  const { items, updateItem, deleteItem, mutate } = useItems({ hasFunnel: true })
   const { open: openMenu } = useContextMenu()
 
   const byQueue = (q: QueueTag) => items.filter(i => i.funnel?.queueTag === q)
