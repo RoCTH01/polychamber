@@ -4,6 +4,13 @@ export type MessageWho = 'src' | 'me'
 export type MessageKind = 'text' | 'task' | 'link' | 'quote'
 export type WidgetType = 'heatmap' | 'feed' | 'calendar' | 'funnel' | 'focus' | 'reminders'
 export type HeatmapScale = 'accent' | 'mono' | 'thermal'
+
+export interface HeatmapConfig {
+  mode: 'all' | 'tag' | 'note' | 'habit'
+  tag?: string
+  noteId?: string
+  goalPerWeek?: number
+}
 export type Theme = 'dark' | 'light' | 'hc'
 export type Density = 'compact' | 'comfy' | 'spacious'
 
