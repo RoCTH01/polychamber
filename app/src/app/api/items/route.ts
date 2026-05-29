@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
-import { items, itemReminder, itemFunnel, itemFocus, itemMessage } from '@/lib/db/schema'
+import { items, itemReminder, itemFunnel, itemFocus, itemMessage, itemLinks } from '@/lib/db/schema'
 import { eq, isNull, isNotNull, desc, and, sql } from 'drizzle-orm'
+import { parseLinks } from '@/lib/parseLinks'
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams
@@ -83,6 +84,24 @@ export async function POST(request: NextRequest) {
       count            = activity.count + 1,
       source_breakdown = activity.source_breakdown || ${JSON.stringify({ [srcKey]: 1 })}::jsonb
   `)
+
+  // Sync inline [[uuid:Title]] links from body
+  const inlineLinks = parseLinks(itemBody ?? '')
+  if (inlineLinks.length > 0) {
+    await db.insert(itemLinks)
+      .values(inlineLinks.map(l => ({ fromId: item.id, toId: l.uuid, linkKind: 'inline' as const })))
+      .onConflictDoNothing()
+  }
+
+  // For note_ref messages, create a reference link edge
+  if (message?.messageKind === 'note_ref' && itemBody) {
+    const toId = itemBody.split(':')[0]
+    if (toId) {
+      await db.insert(itemLinks)
+        .values({ fromId: item.id, toId, linkKind: 'reference' as const })
+        .onConflictDoNothing()
+    }
+  }
 
   return NextResponse.json(item, { status: 201 })
 }
