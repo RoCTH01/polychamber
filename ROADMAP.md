@@ -28,6 +28,12 @@ Everything is a first-class item — notes you write and content you save from o
 | **macOS shell** | Titlebar, traffic lights, Electron main + preload |
 | **Context menu system** | Right-click menus on all interactive items across the app |
 | **Calendar → note linking** | Events link to notes with full DB persistence and NoteEditor badge |
+| **Capture modal** | `+` button opens fast-entry modal — body, tag chips, optional queue bucket; item lands in Feed immediately |
+| **Universal review queue** | Any item (note, saved content) can be queued Next/Soon/Later via context menu or capture modal |
+| **Feed Me/New tabs** | Me = items you wrote (no src); New = untagged + unstarred inbox; queue actions on every row |
+| **Heatmap v2** | Per-instance config (all activity / tag filter / habit tracker); gear panel; weekly habit progress bar |
+| **Tag → heatmap shortcut** | Right-click any tag chip in Feed → "Track #tag in heatmap" adds a pre-configured instance |
+| **Widget config persistence** | Each widget instance stores its own config in `ws.layout` JSONB; survives reload |
 
 ---
 
@@ -89,54 +95,37 @@ Everything is a first-class item — notes you write and content you save from o
 
 ---
 
-## Foundation work — prerequisite for the new direction
+## Foundation work ✓ Complete
 
-These are schema and API changes that unlock the features below. None require rebuilding anything — all additive.
-
-| Change | Why it's needed | Effort |
-|---|---|---|
-| **Add `config` to `LayoutItem`** | Every configurable widget (heatmap target, feed filter) stores its config per-instance in the layout JSON | Tiny — one field on an interface + JSONB |
-| **Add `updatedAt` to `items`** | Per-note heatmap ("how often did I update my gym note?") and staleness surfacing | Small — migration + touch on every PATCH |
-| **Loosen funnel kind constraint** | Any item should be queueable, not just `funnel_item` kind | Small — remove kind check in the API |
-| **Tag-activity computed query** | Heatmap filtered by tag queries `items` directly by day; no schema change needed, just a new API param | Medium — new route or param on `/api/activity` |
-
----
-
-## Phase A — Unified content pool
-> ~3–4 days — makes the product direction real
-
-**Funnel → Universal review queue**
-- Remove the `funnel_item` kind gate; allow any item to have a `item_funnel` extension
-- Add "Send to queue" to the Feed and Note editor context menus
-- The Funnel widget shows all queued items regardless of original kind
-
-**Feed → All content stream**
-- Add a "Me" source filter for items with no `src` (things you wrote yourself)
-- Add a "New" tab showing unreviewed/untagged items (replaces the toolbar INBOX count as the primary capture review surface)
-
-**Capture modal**
-- Wire the `+` button in the toolbar to a fast modal: type a thought or paste a URL, optionally pick a queue bucket (next/soon/later) and tags, hit Enter
-- One action — item is in the system and optionally queued
-
----
-
-## Phase B — Heatmap v2 (configurable instances)
-> ~2–3 days
-
-Each Heatmap widget gets a tracking target configured at add-time (and editable via a gear icon in the header):
-
-| Mode | Tile color means |
+| Change | Status |
 |---|---|
-| **All activity** (current default) | Volume of any content that day |
-| **Tag** | Frequency of items tagged `#gym` (or any tag) |
-| **Specific note** | How often a single note was updated |
-| **Habit** | Hit / partial / missed against a weekly target cadence |
+| **`config` on `LayoutItem`** | ✓ — each widget instance stores its own config in the layout JSONB |
+| **`updatedAt` on `items`** | ✓ — DB migration applied; touched on every PATCH |
+| **Funnel kind constraint removed** | ✓ — any item kind can now have a funnel extension |
+| **Tag-activity computed query** | ✓ — `/api/activity/tag?tag=X&days=N` route live |
 
-- Tag mode: computed query on `items` filtered by tag, grouped by `DATE(created_at)`
-- Note mode: requires `updatedAt` (from foundation work); groups by `DATE(updated_at)`
-- Habit mode: binary tiles; adds a "X/week goal" setting and a weekly progress indicator
-- Streak KPI becomes meaningful: "12 days since you missed a gym session"
-- Right-click a tag anywhere → "Track this tag" → adds a pre-configured heatmap instance
+---
+
+## Phase A — Unified content pool ✓ Complete
+
+- **Capture modal** — `+` button opens fast-entry modal; body, tag chips, queue bucket selector; Enter saves; item appears in Feed and Funnel immediately
+- **Universal review queue** — any item can be queued Next/Soon/Later via context menu in Feed, Funnel, or NoteEditor header; PATCH funnel is now an upsert
+- **Feed Me tab** — filters to items with no `src` (things you wrote yourself)
+- **Feed New tab** — filters to untagged + unstarred items (inbox view)
+- **Queue actions on Feed rows** — right-click → Queue: Next / Soon / Later (or Move to X if already queued)
+- **Queue actions on NoteEditor header** — right-click note header → same queue options
+- **Funnel widget** — now queries `hasFunnel: true` instead of `kind: 'funnel_item'`; shows all queued items regardless of origin kind
+
+---
+
+## Phase B — Heatmap v2 ✓ Complete
+
+- **Configurable per-instance** — gear (⚙) icon in header opens config panel; each Heatmap widget tracks independently
+- **All activity mode** — existing behaviour; global daily count with source breakdown footer
+- **Tag filter mode** — tiles show frequency of items tagged `#X`; config stores the tag name; hits `/api/activity/tag`
+- **Habit tracker mode** — binary tiles (did/didn't); configurable weekly goal (N×/week); weekly progress bar in footer; streak KPI shows days since last miss
+- **Tag → heatmap shortcut** — right-click any tag chip in Feed → "Track #tag in heatmap" adds a pre-configured instance immediately
+- **Config persists** — stored in `ws.layout` JSONB per widget instance; survives page reload
 
 ---
 
