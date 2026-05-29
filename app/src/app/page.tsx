@@ -6,6 +6,7 @@ import Toolbar        from '@/components/layout/Toolbar'
 import WorkspaceGrid  from '@/components/layout/WorkspaceGrid'
 import NoteEditor     from '@/components/note-editor/NoteEditor'
 import SettingsModal        from '@/components/SettingsModal'
+import CaptureModal from '@/components/ui/CaptureModal'
 import { ContextMenuProvider } from '@/components/ui/ContextMenu'
 import { useAppStore } from '@/store/app'
 import { useItems }    from '@/hooks/useItems'
@@ -15,6 +16,7 @@ export default function Page() {
   const density        = useAppStore(s => s.density)
   const fontSize       = useAppStore(s => s.fontSize)
   const settingsOpen   = useAppStore(s => s.settingsOpen)
+  const captureOpen    = useAppStore(s => s.captureOpen)
   const activeWs       = useAppStore(s => s.activeWorkspace)
   const openNoteId         = useAppStore(s => s.openNoteId)
   const setOpenNote        = useAppStore(s => s.setOpenNoteId)
@@ -56,6 +58,7 @@ export default function Page() {
       )}
 
       {settingsOpen && <SettingsModal />}
+      {captureOpen && <CaptureModal />}
     </div>
     </ContextMenuProvider>
   )
