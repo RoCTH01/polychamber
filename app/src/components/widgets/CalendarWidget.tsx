@@ -9,7 +9,7 @@ import { weekStartFor } from '@/lib/utils'
 import { useItems } from '@/hooks/useItems'
 import type { CalendarEvent, DragHandlers } from '@/types'
 
-interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
+interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void; config?: Record<string, unknown> }
 
 const START_HOUR = 8
 const END_HOUR   = 22

@@ -6,7 +6,7 @@ import { useItems } from '@/hooks/useItems'
 import { useContextMenu } from '@/components/ui/ContextMenu'
 import type { DragHandlers } from '@/types'
 
-interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
+interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void; config?: Record<string, unknown> }
 
 const DUE_ORDER = ['today', 'tomorrow', 'this wk', 'next wk']
 

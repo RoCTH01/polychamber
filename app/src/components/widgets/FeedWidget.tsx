@@ -8,7 +8,7 @@ import { useContextMenu } from '@/components/ui/ContextMenu'
 import { SRC_LABEL } from '@/types'
 import type { Item, DragHandlers } from '@/types'
 
-interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
+interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void; config?: Record<string, unknown> }
 
 const SOURCES = ['All', 'Me', 'New', 'TW', 'DC', 'OB', 'MN', 'RD']
 

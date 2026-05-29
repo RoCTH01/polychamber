@@ -6,7 +6,7 @@ import { useItems } from '@/hooks/useItems'
 import { useContextMenu } from '@/components/ui/ContextMenu'
 import type { Item, DragHandlers } from '@/types'
 
-interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
+interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void; config?: Record<string, unknown> }
 
 const QUEUE_ORDER = ['next', 'soon', 'later'] as const
 type QueueTag = typeof QUEUE_ORDER[number]
