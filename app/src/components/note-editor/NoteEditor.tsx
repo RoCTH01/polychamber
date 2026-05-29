@@ -22,12 +22,15 @@ export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Pro
   const [tagInput, setTagInput]   = useState('')
 
   const { open: openMenu } = useContextMenu()
-  const { updateItem: updateRootItem } = useItems()
 
   const queueNote = async (queueTag: 'next' | 'soon' | 'later') => {
-    await updateRootItem(note.id, {
-      funnel: { mediaKind: 'article', source: note.src ?? 'me', est: '', queueTag },
-    } as Partial<Item>)
+    const updatedFunnel = { mediaKind: 'article' as const, source: note.src ?? 'me', est: '', queueTag }
+    onUpdate({ ...note, funnel: updatedFunnel })
+    await fetch(`/api/items/${note.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ funnel: updatedFunnel }),
+    })
   }
 
   const handleHeaderContextMenu = (e: React.MouseEvent) => {
