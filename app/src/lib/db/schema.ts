@@ -14,6 +14,7 @@ export const items = pgTable('items', {
   starred:   boolean('starred').notNull().default(false),
   tags:      text('tags').array().notNull().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
 export const itemReminder = pgTable('item_reminder', {

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   if (kind === 'reminder' && reminder) {
     await db.insert(itemReminder).values({ itemId: item.id, ...reminder })
   }
-  if (kind === 'funnel_item' && funnel) {
+  if (funnel) {
     await db.insert(itemFunnel).values({ itemId: item.id, ...funnel })
   }
   if (kind === 'focus_session' && focus) {

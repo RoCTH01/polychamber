@@ -48,6 +48,7 @@ export interface Item {
   starred: boolean
   tags: string[]
   createdAt: string
+  updatedAt: string
   reminder?: ItemReminder
   funnel?: ItemFunnel
   focus?: ItemFocus
@@ -61,6 +62,7 @@ export interface LayoutItem {
   y: number
   w: number
   h: number
+  config?: Record<string, unknown>
 }
 
 export interface Workspace {

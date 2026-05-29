@@ -11,7 +11,7 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
   const { reminder, funnel, focus, message, ...itemPatch } = body
 
   if (Object.keys(itemPatch).length) {
-    await db.update(items).set(itemPatch).where(eq(items.id, id))
+    await db.update(items).set({ ...itemPatch, updatedAt: new Date() }).where(eq(items.id, id))
   }
   if (reminder) await db.update(itemReminder).set(reminder).where(eq(itemReminder.itemId, id))
   if (funnel)   await db.update(itemFunnel).set(funnel).where(eq(itemFunnel.itemId, id))
