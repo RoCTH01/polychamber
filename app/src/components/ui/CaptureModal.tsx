@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useSWRConfig } from 'swr'
 import { useAppStore } from '@/store/app'
 import { useItems } from '@/hooks/useItems'
 import type { ItemFunnel } from '@/types'
@@ -16,6 +17,9 @@ export default function CaptureModal() {
   const [loading, setLoading]   = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
+
+  const { mutate: globalMutate } = useSWRConfig()
+  const submittingRef = useRef(false)
 
   const { createItem } = useItems()
 
@@ -36,15 +40,19 @@ export default function CaptureModal() {
   const removeTag = (t: string) => setTags(prev => prev.filter(x => x !== t))
 
   const handleSubmit = async () => {
-    if (!body.trim() || loading) return
+    if (!body.trim() || submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
     try {
       const funnel: ItemFunnel | undefined = queue
         ? { mediaKind: 'article', source: 'me', est: '', queueTag: queue }
         : undefined
       await createItem({ kind: 'note', body: body.trim(), tags, funnel })
+      globalMutate('/api/items?parentId=null')
+      if (queue) globalMutate('/api/items?hasFunnel=true')
       setCaptureOpen(false)
     } finally {
+      submittingRef.current = false
       setLoading(false)
     }
   }
