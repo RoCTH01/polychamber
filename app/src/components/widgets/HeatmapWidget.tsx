@@ -46,7 +46,7 @@ export default function HeatmapWidget({ id, dragHandlers, onClose, config: rawCo
     setDraftTag(hmConfig.tag ?? '')
     setDraftGoal(hmConfig.goalPerWeek ?? 3)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rawConfig])
+  }, [hmConfig.mode, hmConfig.tag, hmConfig.goalPerWeek])
 
   useEffect(() => {
     if (!configOpen) return
