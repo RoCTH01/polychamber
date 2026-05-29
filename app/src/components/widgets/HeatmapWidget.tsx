@@ -1,13 +1,19 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import WidgetShell from './WidgetShell'
 import Kpi from '../ui/Kpi'
 import { useActivity } from '@/hooks/useActivity'
+import { useWorkspaces } from '@/hooks/useWorkspaces'
 import { useAppStore } from '@/store/app'
-import type { DragHandlers, ActivityDay } from '@/types'
+import type { DragHandlers, ActivityDay, HeatmapConfig } from '@/types'
 
-interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
+interface Props {
+  id: string
+  dragHandlers: DragHandlers
+  onClose: () => void
+  config?: Record<string, unknown>
+}
 
 const SRC_BREAKDOWN = [
   { src: 'tw', label: 'Twitter' }, { src: 'ob', label: 'Obsidian' },
@@ -15,14 +21,45 @@ const SRC_BREAKDOWN = [
 ]
 const SRC_LABEL: Record<string, string> = { tw: 'TW', ob: 'OB', dc: 'DC', mn: 'MN', rd: 'RD' }
 
-export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
-  const heatmapScale = useAppStore(s => s.heatmapScale)
-  const [view, setView] = useState('365d')
-  const { activity: days365, mutate: mutate365 } = useActivity(365)
-  const { activity: days90,  mutate: mutate90  } = useActivity(90)
-  const { activity: days30,  mutate: mutate30  } = useActivity(30)
+function parseConfig(raw?: Record<string, unknown>): HeatmapConfig {
+  if (!raw) return { mode: 'all' }
+  return raw as unknown as HeatmapConfig
+}
 
-  const allDays = view === '90d' ? days90 : view === '30d' ? days30 : days365
+export default function HeatmapWidget({ id, dragHandlers, onClose, config: rawConfig }: Props) {
+  const heatmapScale = useAppStore(s => s.heatmapScale)
+  const activeWs     = useAppStore(s => s.activeWorkspace)
+  const { workspaces, updateWidgetConfig } = useWorkspaces()
+  const ws = workspaces.find(w => w.name === activeWs)
+
+  const hmConfig = parseConfig(rawConfig)
+  const [view, setView]       = useState('365d')
+  const [configOpen, setConfigOpen] = useState(false)
+  const configRef = useRef<HTMLDivElement>(null)
+
+  const [draftMode, setDraftMode]   = useState<HeatmapConfig['mode']>(hmConfig.mode)
+  const [draftTag,  setDraftTag]    = useState(hmConfig.tag ?? '')
+  const [draftGoal, setDraftGoal]   = useState(hmConfig.goalPerWeek ?? 3)
+
+  useEffect(() => {
+    setDraftMode(hmConfig.mode)
+    setDraftTag(hmConfig.tag ?? '')
+    setDraftGoal(hmConfig.goalPerWeek ?? 3)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawConfig])
+
+  useEffect(() => {
+    if (!configOpen) return
+    const handler = (e: MouseEvent) => {
+      if (configRef.current && !configRef.current.contains(e.target as Node)) setConfigOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [configOpen])
+
+  const days = view === '90d' ? 90 : view === '30d' ? 30 : 365
+  const { activity: allDays, mutate } = useActivity(days, hmConfig)
+
   const [hover, setHover] = useState<ActivityDay | null>(null)
 
   const weeks = useMemo(() => {
@@ -50,12 +87,13 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
 
   const srcTotals = useMemo(() => {
     const acc: Record<string, number> = {}
-    allDays.forEach(d => Object.entries(d.sourceBreakdown).forEach(([k, v]) => { acc[k] = (acc[k] ?? 0) + v }))
+    allDays.forEach(d => Object.entries(d.sourceBreakdown ?? {}).forEach(([k, v]) => { acc[k] = (acc[k] ?? 0) + v }))
     return acc
   }, [allDays])
 
   const scaleColor = (count: number) => {
     if (count === 0) return 'var(--panel-hi)'
+    if (hmConfig.mode === 'habit') return 'var(--accent)'
     const t = Math.min(1, count / maxVal)
     const stop = Math.ceil(t * 4)
     if (heatmapScale === 'mono') {
@@ -72,25 +110,98 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
     return `oklch(${ls[stop]} ${cs[stop]} 220)`
   }
 
-  const hourly = useMemo(() => {
-    const arr = Array(24).fill(0)
-    for (let h = 0; h < 24; h++) {
-      const a = Math.exp(-((h - 10) ** 2) / 8) * 12
-      const b = Math.exp(-((h - 14) ** 2) / 6) * 9
-      const c = Math.exp(-((h - 21) ** 2) / 4) * 7
-      arr[h] = Math.round(a + b + c + (h % 3))
-    }
-    return arr
-  }, [])
-  const hourMax = Math.max(...hourly)
+  const applyConfig = async () => {
+    if (!ws) return
+    const newConfig: HeatmapConfig = { mode: draftMode }
+    if (draftMode === 'tag' && draftTag.trim()) newConfig.tag = draftTag.trim()
+    if (draftMode === 'habit') newConfig.goalPerWeek = draftGoal
+    await updateWidgetConfig(ws.id, id, newConfig as unknown as Record<string, unknown>)
+    setConfigOpen(false)
+  }
+
+  const modeLabel = () => {
+    if (hmConfig.mode === 'tag')   return `#${hmConfig.tag}`
+    if (hmConfig.mode === 'habit') return `habit ${hmConfig.goalPerWeek ?? 3}×/wk`
+    return 'all sources'
+  }
+
+  const gearButton = (
+    <div ref={configRef} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setConfigOpen(o => !o)}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 12, padding: '0 4px', lineHeight: 1 }}
+        title="Configure heatmap"
+      >
+        ⚙
+      </button>
+      {configOpen && (
+        <div style={{
+          position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 300,
+          background: 'var(--panel-2)', border: '1px solid var(--border)',
+          borderRadius: 6, padding: 12, width: 220,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          display: 'flex', flexDirection: 'column', gap: 8,
+        }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.07em' }}>TRACKING MODE</div>
+          {(['all', 'tag', 'habit'] as const).map(m => (
+            <label key={m} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 'var(--fs-xs)', color: 'var(--text-2)', fontFamily: 'var(--font-ui)' }}>
+              <input type="radio" checked={draftMode === m} onChange={() => setDraftMode(m)} style={{ accentColor: 'var(--accent)' }} />
+              {m === 'all' ? 'All activity' : m === 'tag' ? 'Tag filter' : 'Habit tracker'}
+            </label>
+          ))}
+          {draftMode === 'tag' && (
+            <input
+              value={draftTag}
+              onChange={e => setDraftTag(e.target.value)}
+              placeholder="tag name (e.g. gym)"
+              style={{
+                height: 28, padding: '0 8px',
+                background: 'var(--panel-hi)', border: '1px solid var(--border)',
+                borderRadius: 4, color: 'var(--text)',
+                fontFamily: 'var(--font-ui)', fontSize: 'var(--fs-xs)', outline: 'none',
+              }}
+            />
+          )}
+          {draftMode === 'habit' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)', fontFamily: 'var(--font-ui)' }}>Goal:</span>
+              <input
+                type="number" min={1} max={7}
+                value={draftGoal}
+                onChange={e => setDraftGoal(Number(e.target.value))}
+                style={{
+                  width: 40, height: 28, padding: '0 6px',
+                  background: 'var(--panel-hi)', border: '1px solid var(--border)',
+                  borderRadius: 4, color: 'var(--text)',
+                  fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-xs)', outline: 'none',
+                }}
+              />
+              <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)', fontFamily: 'var(--font-ui)' }}>×/week</span>
+            </div>
+          )}
+          <button
+            onClick={applyConfig}
+            style={{
+              height: 28, background: 'var(--accent)', color: 'var(--bg)',
+              border: 'none', borderRadius: 4, cursor: 'pointer',
+              fontFamily: 'var(--font-ui)', fontSize: 'var(--fs-xs)',
+            }}
+          >
+            Apply
+          </button>
+        </div>
+      )}
+    </div>
+  )
 
   return (
-    <WidgetShell id={id} title="Activity" meta={`${view} · all sources`}
+    <WidgetShell id={id} title="Activity" meta={`${view} · ${modeLabel()}`}
       tabs={['365d', '90d', '30d']} tab={view} onTab={setView}
       dragHandlers={dragHandlers} onClose={onClose}
-      onRefresh={() => { mutate365(); mutate90(); mutate30() }}>
+      onRefresh={mutate}
+      extraHeaderActions={gearButton}
+    >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
-        {/* KPI row */}
         <div className="hm-kpi-row row gap-12" style={{ flexShrink: 0 }}>
           <Kpi label="TOTAL"     value={total.toLocaleString()} />
           <Kpi label="STREAK"    value={`${streak}d`} accent />
@@ -107,7 +218,6 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
           </div>
         </div>
 
-        {/* Tile-graph header — reserved row so the hover tooltip never overlaps the KPI boxes */}
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, height: 14, paddingLeft: 22 }}>
           <span className="mono" style={{ fontSize: 9, color: 'var(--text-4)', letterSpacing: '0.07em' }}>DAILY</span>
           {hover && (
@@ -117,39 +227,27 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
           )}
         </div>
 
-        {/* Heatmap grid — single flat CSS grid, column-per-week, no aspect-ratio tricks.
-            365d uses minmax(0, TILE_PX) so columns shrink to fit narrow widgets but
-            never balloon. 90d / 30d use fixed px columns (naturally sized, no stretch).
-            Explicit row heights mean tiles never overflow their tracks.              */}
         {(() => {
           const TILE_GAP = 3
-          // 365d uses slightly smaller tiles; 90d/30d stay at 11px
           const TILE_PX  = view === '365d' ? 10 : 11
-          const gridH    = 7 * TILE_PX + 6 * TILE_GAP   // e.g. 88px or 95px — no overflow
-
-          // Flatten weeks into a single sequence ordered column-by-column so
-          // grid-auto-flow: column fills each week-column top→bottom automatically.
+          const gridH    = 7 * TILE_PX + 6 * TILE_GAP
           const flatDays = weeks.flatMap(wk => wk)
-
           return (
             <div style={{ position: 'relative', flexShrink: 0, paddingLeft: 22, height: gridH }}>
               <div style={{
                 display: 'grid',
-                // 365d: columns shrink to fit but cap at TILE_PX — fills width without overflowing
-                // 90d/30d: fixed pixel columns, grid width = content, no stretching
                 gridTemplateColumns: view === '365d'
                   ? `repeat(${weeks.length}, minmax(0, ${TILE_PX}px))`
                   : `repeat(${weeks.length}, ${TILE_PX}px)`,
-                gridTemplateRows: `repeat(7, ${TILE_PX}px)`,  // explicit → no aspect-ratio conflict
-                gridAutoFlow: 'column',   // place items week-by-week (column-major)
+                gridTemplateRows: `repeat(7, ${TILE_PX}px)`,
+                gridAutoFlow: 'column',
                 gap: TILE_GAP,
                 width: '100%',
                 height: '100%',
               }}>
                 {flatDays.map((d, i) => (
                   <div key={i} style={{
-                    width: '100%', height: '100%',
-                    borderRadius: 2,
+                    width: '100%', height: '100%', borderRadius: 2,
                     background: d ? scaleColor(d.count) : 'transparent',
                     outline: hover && d && hover.date === d.date ? '1px solid var(--text-2)' : 'none',
                     outlineOffset: 1,
@@ -159,8 +257,6 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
                   />
                 ))}
               </div>
-
-              {/* Day-of-week labels — explicit row heights match tile rows exactly */}
               <div style={{
                 position: 'absolute', left: 0, top: 0, height: gridH,
                 display: 'grid', gridTemplateRows: `repeat(7, ${TILE_PX}px)`, gap: TILE_GAP,
@@ -174,40 +270,51 @@ export default function HeatmapWidget({ id, dragHandlers, onClose }: Props) {
           )
         })()}
 
-        {/* Hourly histogram */}
-        <div className="hm-hourly" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minHeight: 0 }}>
-          <div className="row" style={{ justifyContent: 'space-between' }}>
-            <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)', letterSpacing: '0.06em' }}>HOURLY · LAST 30D</span>
-            <span className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-4)' }}>peak 14:00</span>
+        {hmConfig.mode === 'all' && (
+          <div className="hm-sources" style={{ flexShrink: 0, borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
+            <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
+              {SRC_BREAKDOWN.map(s => (
+                <div key={s.src} className="row gap-6">
+                  <span className={`src-icon src-${s.src}`}>{SRC_LABEL[s.src]}</span>
+                  <span className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-2)' }}>
+                    {(srcTotals[s.src] ?? 0).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, flex: 1, minHeight: 24 }}>
-            {hourly.map((v, h) => (
-              <div key={h} style={{
-                flex: 1, height: `${(v / hourMax) * 100}%`,
-                background: scaleColor(Math.round((v / hourMax) * maxVal)),
-                borderRadius: '1px 1px 0 0', minHeight: 1,
-              }} title={`${String(h).padStart(2, '0')}:00 · ${v}`} />
-            ))}
-          </div>
-          <div style={{ display: 'flex', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-4)', marginTop: -2 }}>
-            {[0, 6, 12, 18].map(h => <div key={h} style={{ flex: h === 18 ? 'none' : 1 }}>{String(h).padStart(2, '0')}</div>)}
-            <div style={{ marginLeft: 'auto' }}>23</div>
-          </div>
-        </div>
+        )}
 
-        {/* Source breakdown */}
-        <div className="hm-sources" style={{ flexShrink: 0, borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
-          <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-            {SRC_BREAKDOWN.map(s => (
-              <div key={s.src} className="row gap-6">
-                <span className={`src-icon src-${s.src}`}>{SRC_LABEL[s.src]}</span>
-                <span className="mono tab" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-2)' }}>
-                  {(srcTotals[s.src] ?? 0).toLocaleString()}
-                </span>
-              </div>
-            ))}
+        {hmConfig.mode === 'habit' && (
+          <div style={{ flexShrink: 0, borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
+            {(() => {
+              const goal = hmConfig.goalPerWeek ?? 3
+              const today = new Date()
+              const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1
+              const weekStart = new Date(today)
+              weekStart.setDate(today.getDate() - dayOfWeek)
+              weekStart.setHours(0, 0, 0, 0)
+              const thisWeekCount = allDays.filter(d => {
+                const date = new Date(d.date + 'T00:00:00')
+                return date >= weekStart && d.count > 0
+              }).length
+              const pct = Math.min(1, thisWeekCount / goal)
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div className="row" style={{ justifyContent: 'space-between' }}>
+                    <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>THIS WEEK</span>
+                    <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: thisWeekCount >= goal ? 'var(--accent)' : 'var(--text-2)' }}>
+                      {thisWeekCount}/{goal}
+                    </span>
+                  </div>
+                  <div style={{ height: 4, background: 'var(--panel-hi)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ width: `${pct * 100}%`, height: '100%', background: thisWeekCount >= goal ? 'var(--accent)' : 'var(--text-3)', borderRadius: 2, transition: 'width 0.3s' }} />
+                  </div>
+                </div>
+              )
+            })()}
           </div>
-        </div>
+        )}
       </div>
     </WidgetShell>
   )
