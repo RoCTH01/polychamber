@@ -6,9 +6,8 @@ export type WidgetType = 'heatmap' | 'feed' | 'calendar' | 'funnel' | 'focus' | 
 export type HeatmapScale = 'accent' | 'mono' | 'thermal'
 
 export interface HeatmapConfig {
-  mode: 'all' | 'tag' | 'note' | 'habit'
+  mode: 'all' | 'tag' | 'habit'
   tag?: string
-  noteId?: string
   goalPerWeek?: number
 }
 export type Theme = 'dark' | 'light' | 'hc'
