@@ -1,7 +1,7 @@
 export type ItemKind = 'note' | 'reminder' | 'funnel_item' | 'focus_session'
 export type Src = 'tw' | 'dc' | 'ob' | 'mn' | 'rd'
 export type MessageWho = 'src' | 'me'
-export type MessageKind = 'text' | 'task' | 'link' | 'quote'
+export type MessageKind = 'text' | 'task' | 'link' | 'quote' | 'note_ref'
 export type WidgetType = 'heatmap' | 'feed' | 'calendar' | 'funnel' | 'focus' | 'reminders'
 export type HeatmapScale = 'accent' | 'mono' | 'thermal'
 
@@ -93,6 +93,13 @@ export interface CalendarEvent {
   weekStart: string
   isCurrent: boolean
   linkedNoteId: string | null
+}
+
+export interface ItemLink {
+  id: string
+  fromId: string
+  toId: string
+  linkKind: 'inline' | 'reference'
 }
 
 export interface DragHandlers {

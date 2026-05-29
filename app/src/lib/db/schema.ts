@@ -1,6 +1,6 @@
 import {
   pgTable, uuid, text, boolean, integer, numeric,
-  date, timestamp, jsonb, type AnyPgColumn,
+  date, timestamp, jsonb, type AnyPgColumn, unique,
 } from 'drizzle-orm/pg-core'
 import type { LayoutItem } from '@/types'
 
@@ -71,3 +71,10 @@ export const calendarEvents = pgTable('calendar_events', {
   isCurrent:    boolean('is_current').notNull().default(false),
   linkedNoteId: uuid('linked_note_id').references((): AnyPgColumn => items.id, { onDelete: 'set null' }),
 })
+
+export const itemLinks = pgTable('item_links', {
+  id:       uuid('id').primaryKey().defaultRandom(),
+  fromId:   uuid('from_id').notNull().references(() => items.id, { onDelete: 'cascade' }),
+  toId:     uuid('to_id').notNull().references(() => items.id, { onDelete: 'cascade' }),
+  linkKind: text('link_kind').notNull(),
+}, (t) => [unique().on(t.fromId, t.toId)])
