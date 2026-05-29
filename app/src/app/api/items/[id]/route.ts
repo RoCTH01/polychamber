@@ -11,10 +11,14 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
   const { reminder, funnel, focus, message, ...itemPatch } = body
 
   if (Object.keys(itemPatch).length) {
-    await db.update(items).set(itemPatch).where(eq(items.id, id))
+    await db.update(items).set({ ...itemPatch, updatedAt: new Date() }).where(eq(items.id, id))
   }
   if (reminder) await db.update(itemReminder).set(reminder).where(eq(itemReminder.itemId, id))
-  if (funnel)   await db.update(itemFunnel).set(funnel).where(eq(itemFunnel.itemId, id))
+  if (funnel) {
+    await db.insert(itemFunnel)
+      .values({ itemId: id, mediaKind: funnel.mediaKind ?? 'article', source: funnel.source ?? 'me', est: funnel.est ?? '', queueTag: funnel.queueTag ?? 'later' })
+      .onConflictDoUpdate({ target: itemFunnel.itemId, set: { mediaKind: funnel.mediaKind ?? 'article', source: funnel.source ?? 'me', est: funnel.est ?? '', queueTag: funnel.queueTag ?? 'later' } })
+  }
   if (focus)    await db.update(itemFocus).set(focus).where(eq(itemFocus.itemId, id))
   if (message)  await db.update(itemMessage).set(message).where(eq(itemMessage.itemId, id))
 

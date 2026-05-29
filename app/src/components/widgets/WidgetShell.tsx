@@ -11,6 +11,7 @@ interface Props {
   tab?: string
   onTab?: (tab: string) => void
   actions?: React.ReactNode
+  extraHeaderActions?: React.ReactNode
   dragHandlers?: DragHandlers
   onClose?: () => void
   onRefresh?: () => void
@@ -18,7 +19,7 @@ interface Props {
   noPad?: boolean
 }
 
-export default function WidgetShell({ id, title, meta, tabs, tab, onTab, actions, dragHandlers, onClose, onRefresh, children, noPad }: Props) {
+export default function WidgetShell({ id, title, meta, tabs, tab, onTab, actions, extraHeaderActions, dragHandlers, onClose, onRefresh, children, noPad }: Props) {
   const { open: openMenu } = useContextMenu()
 
   const handleHeaderContextMenu = (e: React.MouseEvent) => {
@@ -44,6 +45,7 @@ export default function WidgetShell({ id, title, meta, tabs, tab, onTab, actions
         <div className="w-actions">
           {actions}
           <button className="w-act" title="Refresh" onClick={e => { e.stopPropagation(); onRefresh?.() }}>↻</button>
+          {extraHeaderActions}
           <button className="w-act" title="Close" onClick={e => { e.stopPropagation(); onClose?.() }}>×</button>
         </div>
       </div>

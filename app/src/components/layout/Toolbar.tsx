@@ -19,6 +19,7 @@ const WIDGET_TYPES: { type: WidgetType; label: string; icon: string }[] = [
 
 export default function Toolbar() {
   const activeWs = useAppStore(s => s.activeWorkspace)
+  const setCaptureOpen = useAppStore(s => s.setCaptureOpen)
   const { workspaces, addWidget } = useWorkspaces()
   const ws = workspaces.find(w => w.name === activeWs)
 
@@ -85,7 +86,7 @@ export default function Toolbar() {
         )}
       </div>
       <div className="tb-divider" />
-      <button className="tb-btn tb-btn-capture"><Icon name="plus" /><span className="tb-label"> Capture</span></button>
+      <button className="tb-btn tb-btn-capture" onClick={() => setCaptureOpen(true)}><Icon name="plus" /><span className="tb-label"> Capture</span></button>
       <div className="tb-divider" />
       <span className="mono tb-status" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-4)', letterSpacing: '0.06em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, flexShrink: 1 }}>
         NOTES <span style={{ color: 'var(--text-2)' }}>{noteCount}</span>

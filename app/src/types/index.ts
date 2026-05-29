@@ -4,6 +4,12 @@ export type MessageWho = 'src' | 'me'
 export type MessageKind = 'text' | 'task' | 'link' | 'quote'
 export type WidgetType = 'heatmap' | 'feed' | 'calendar' | 'funnel' | 'focus' | 'reminders'
 export type HeatmapScale = 'accent' | 'mono' | 'thermal'
+
+export interface HeatmapConfig {
+  mode: 'all' | 'tag' | 'habit'
+  tag?: string
+  goalPerWeek?: number
+}
 export type Theme = 'dark' | 'light' | 'hc'
 export type Density = 'compact' | 'comfy' | 'spacious'
 
@@ -48,6 +54,7 @@ export interface Item {
   starred: boolean
   tags: string[]
   createdAt: string
+  updatedAt: string
   reminder?: ItemReminder
   funnel?: ItemFunnel
   focus?: ItemFocus
@@ -61,6 +68,7 @@ export interface LayoutItem {
   y: number
   w: number
   h: number
+  config?: Record<string, unknown>
 }
 
 export interface Workspace {

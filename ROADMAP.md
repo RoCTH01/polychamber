@@ -1,5 +1,15 @@
 # Polychamber — Roadmap
 
+## Product direction
+
+Polychamber is a personal knowledge workspace — an alternative to Notion and Obsidian with a novel display model. Instead of navigating into one page at a time inside a folder hierarchy, your content is visible through multiple simultaneous lenses: a chronological feed, a priority queue, a calendar, an activity heatmap. Things you save don't go to die; they stay in your peripheral vision.
+
+**Core loop: Capture → Surface → Revisit**
+
+Everything is a first-class item — notes you write and content you save from outside are the same object. Widgets are different views of one unified content pool, not separate feature silos.
+
+---
+
 ## What's fully working
 
 | Area | Details |
@@ -51,12 +61,7 @@
 ### Interaction model
 - **Font size scale shifted up** — old "large" is now "small"; medium and large are proportionally bigger
 - **Context menu system** — shared `ContextMenuProvider` + `useContextMenu()` hook; portal-rendered, edge-detected, Escape/click-outside to close; 80ms scale-in animation
-- **Right-click menus wired across the app:**
-  - Feed rows: Open · Star/Unstar · Copy text · Delete
-  - Funnel items: Move to Next/Soon/Later · Mark done & remove
-  - Reminder items: Mark complete/incomplete · Delete
-  - Note editor messages: Edit · Copy text · Reply (stub) · Delete
-  - Widget headers: Hide widget
+- **Right-click menus wired across the app:** Feed rows, Funnel items, Reminder items, Note editor messages, Widget headers
 - **Message hover toolbar** — stripped to just ☺ react button; all other actions moved to right-click
 
 ### Calendar → note linking
@@ -68,51 +73,101 @@
 - **NoteEditor event badge** — tinted bar in the note header showing event title, day, and time when opened from a calendar event
 
 ### Visual design refresh
-- **Warm neutral color system** — dark theme shifted to near-neutral warm base (`oklch` hue 60) with amber accent (`--accent: oklch(0.75 0.14 60)`); light and high-contrast themes updated to match
-- **Dark theme luminance raised** — slightly lighter dark base for better readability without losing depth
-- **Pure gray neutrals** — removed residual chroma from background/border tokens (chroma → 0); amber accent stays warm
-- **Widget titles sentence case** — all widget headers converted from ALL CAPS to sentence case across every widget
-- **Widget header typography** — switched from mono to Inter, lighter background (`--panel` instead of `--panel-2`)
-- **Chip and tag typography** — lowercase Inter pills with rounded corners; `settings-section-label` switched to Inter
-- **Warm hover tints** — feed and funnel row hovers now use a subtle amber tint instead of cool gray
+- **Warm neutral color system** — dark theme shifted to near-neutral warm base (`oklch` hue 60) with amber accent; light and high-contrast themes updated to match
+- **Widget titles sentence case** — all widget headers converted from ALL CAPS to sentence case
+- **Widget header typography** — switched from mono to Inter, lighter background
+- **Chip and tag typography** — lowercase Inter pills with rounded corners
+- **Warm hover tints** — feed and funnel row hovers now use a subtle amber tint
 - **Note editor** — body text enlarged to 13.5px with 1.65 line-height; tag chips switched to Inter lowercase pills
-- **Feed widget** — author and tags use Inter (not mono); starred icon uses amber accent; body line-height loosened to 1.55
+- **Feed widget** — author and tags use Inter (not mono); starred icon uses amber accent
 
 ### Responsive widgets (container queries)
-- **Container query foundation** — `container-type: inline-size` on `.widget-body`; global text-overflow rules added; workspace min-width set
-- **Toolbar collapse** — button labels wrapped in `.tb-label` spans and hidden via `@media` at narrow window widths
-- **Feed widget** — three content tiers (sm/md/lg) via `@container`; tags and body text hidden at narrow widths
-- **Heatmap widget** — histogram and sources section hidden at sm; KPI label wrapping fixed
-- **Calendar widget** — time column hidden at sm; day abbreviations shortened at narrow widths
-- **Focus widget** — sessions list hidden at sm; progress ring shrinks at narrow widths
-- **Funnel + Reminders** — meta text hidden at sm via container queries
+- **Container query foundation** — `container-type: inline-size` on `.widget-body`; global text-overflow rules added
+- **Toolbar collapse** — button labels hidden via `@media` at narrow window widths
+- **Per-widget responsive tiers** — Feed, Heatmap, Calendar, Focus, Funnel, Reminders all respond to `@container` breakpoints
 - **Widget header overflow** — fixed header text truncation and overflow at all sizes
-- **Tab and button text** — added `white-space: nowrap` globally to prevent text wrapping in tabs and buttons
 
 ---
 
-## Phase 1 — Wire the remaining shell buttons ✓ Complete
+## Foundation work — prerequisite for the new direction
 
-All Phase 1 shell buttons are now wired. See "Shipped this session" above.
+These are schema and API changes that unlock the features below. None require rebuilding anything — all additive.
+
+| Change | Why it's needed | Effort |
+|---|---|---|
+| **Add `config` to `LayoutItem`** | Every configurable widget (heatmap target, feed filter) stores its config per-instance in the layout JSON | Tiny — one field on an interface + JSONB |
+| **Add `updatedAt` to `items`** | Per-note heatmap ("how often did I update my gym note?") and staleness surfacing | Small — migration + touch on every PATCH |
+| **Loosen funnel kind constraint** | Any item should be queueable, not just `funnel_item` kind | Small — remove kind check in the API |
+| **Tag-activity computed query** | Heatmap filtered by tag queries `items` directly by day; no schema change needed, just a new API param | Medium — new route or param on `/api/activity` |
 
 ---
 
-## Phase 2 — Search (⌘K modal)
+## Phase A — Unified content pool
+> ~3–4 days — makes the product direction real
+
+**Funnel → Universal review queue**
+- Remove the `funnel_item` kind gate; allow any item to have a `item_funnel` extension
+- Add "Send to queue" to the Feed and Note editor context menus
+- The Funnel widget shows all queued items regardless of original kind
+
+**Feed → All content stream**
+- Add a "Me" source filter for items with no `src` (things you wrote yourself)
+- Add a "New" tab showing unreviewed/untagged items (replaces the toolbar INBOX count as the primary capture review surface)
+
+**Capture modal**
+- Wire the `+` button in the toolbar to a fast modal: type a thought or paste a URL, optionally pick a queue bucket (next/soon/later) and tags, hit Enter
+- One action — item is in the system and optionally queued
+
+---
+
+## Phase B — Heatmap v2 (configurable instances)
 > ~2–3 days
 
-The groundwork is already laid — items are in Postgres with full text.
+Each Heatmap widget gets a tracking target configured at add-time (and editable via a gear icon in the header):
+
+| Mode | Tile color means |
+|---|---|
+| **All activity** (current default) | Volume of any content that day |
+| **Tag** | Frequency of items tagged `#gym` (or any tag) |
+| **Specific note** | How often a single note was updated |
+| **Habit** | Hit / partial / missed against a weekly target cadence |
+
+- Tag mode: computed query on `items` filtered by tag, grouped by `DATE(created_at)`
+- Note mode: requires `updatedAt` (from foundation work); groups by `DATE(updated_at)`
+- Habit mode: binary tiles; adds a "X/week goal" setting and a weekly progress indicator
+- Streak KPI becomes meaningful: "12 days since you missed a gym session"
+- Right-click a tag anywhere → "Track this tag" → adds a pre-configured heatmap instance
+
+---
+
+## Phase C — Note-to-note linking
+> ~2 days
+
+The PKM layer — ideas connecting to each other.
+
+| Feature | What it needs |
+|---|---|
+| **`item_links` table** | `(from_id, to_id)` edge table with cascade deletes |
+| **`[[wiki-link]]` syntax** | Parser in the note editor body; renders as a clickable chip |
+| **Backlinks panel** | Section at the bottom of NoteEditor: "X notes link here" |
+| **Link via context menu** | "Link to note…" option opens a search-and-select |
+
+---
+
+## Phase D — Search (⌘K modal)
+> ~2 days
 
 | Feature | What it needs |
 |---|---|
 | **⌘K modal** | Command palette UI (input + results list) |
 | **Full-text search** | `tsvector` column on `items.body` + GIN index, `/api/search?q=` route |
-| **Filter by kind/source** | Pills to scope results (notes only, from Twitter, etc.) |
+| **Filter by kind/tag** | Pills to scope results |
 | **Open result** | Click result → open NoteEditor for that item |
 
 ---
 
-## Phase 3 — Data ingestion
-> The core product value — ~1–2 weeks
+## Phase E — Data ingestion
+> ~1–2 weeks — the core product value
 
 Turns the app from a notes viewer into a live intelligence feed.
 
@@ -128,55 +183,55 @@ Each source needs: auth config UI, background sync worker, conflict/duplicate de
 
 ---
 
-## Phase 4 — LLM pipeline
-> Intelligence layer — ~1 week
-
-The schema is ready — just needs a processing column and worker.
+## Phase F — LLM pipeline
+> ~1 week — intelligence layer
 
 | Feature | What it needs |
 |---|---|
 | **Auto-tagging** | Run each new item through LLM → suggest/apply tags |
 | **Summarization** | Generate `summary` field for long threads/notes |
-| **Categorization** | Classify items into topic clusters |
-| **Vector embeddings** | Add `embedding vector(1536)` column (single Drizzle migration), use `pgvector` |
-| **Semantic search** | Replace Phase 2 full-text with vector similarity (`<=>` operator) |
-| **Contextual surfacing** | "Related notes" panel in NoteEditor based on current thread embedding |
+| **Vector embeddings** | `embedding vector(1536)` column, `pgvector` extension |
+| **Semantic search** | Replace Phase D full-text with vector similarity |
+| **Related notes panel** | "Notes similar to this" in NoteEditor based on embedding |
+| **Contextual surfacing** | Surface items you haven't touched in a while but are relevant now |
 
 ---
 
-## Phase 5 — Polish & distribution
-> Packaging — ~3–4 days
+## Phase G — Polish & distribution
+> ~3–4 days
 
 | Feature | What it needs |
 |---|---|
-| **System tray** | Electron `Tray` with quick-capture popup (open composer without full window) |
-| **Background sync** | Electron `setInterval` or cron in main process; status reflected in toolbar strip |
-| **⌘K global shortcut** | Register `globalShortcut` in Electron main — open app from anywhere |
+| **System tray** | Electron `Tray` with quick-capture popup |
+| **Background sync** | Electron `setInterval` or cron in main process; status in toolbar strip |
+| **⌘K global shortcut** | `globalShortcut` in Electron main — open app from anywhere |
 | **Auto-updater** | `electron-updater` + GitHub releases |
 | **Onboarding flow** | First-launch wizard: connect sources, set preferences |
-| **Electron packaging** | `make build:electron` → signed `.dmg` via electron-builder |
+| **Electron packaging** | `make build:electron` → signed `.dmg` |
 
 ---
 
 ## Priority order
 
 ```
-Phase 1 (shell wiring) → Phase 2 (search) → Phase 3 (ingestion)
-                                                      ↓
-                                          Phase 4 (LLM) → Phase 5 (distribution)
+Foundation → Phase A (unified pool) → Phase B (heatmap v2) → Phase C (linking)
+                                                                      ↓
+                                             Phase D (search) → Phase E (ingestion)
+                                                                      ↓
+                                                    Phase F (LLM) → Phase G (distribution)
 ```
 
-Phase 3 is the highest-leverage work — without real data flowing in, the dashboard is a seeded demo. Everything else compounds on top of real data.
+Foundation and Phase A establish what the product *is*. Phase E (ingestion) is still the highest-leverage feature — without real data flowing in, everything runs on seed data.
 
 ---
 
-## Shell buttons (renders but not yet wired)
+## Shell buttons not yet wired
 
 | Location | Button | Status |
 |---|---|---|
-| Toolbar | + Capture | No action (Phase 2+) |
-| Toolbar | Search bar / ⌘K | Shortcut registered, no modal (Phase 2) |
+| Toolbar | + Capture | Stub — Phase A |
+| Toolbar | Search bar / ⌘K | Shortcut registered, no modal — Phase D |
 | Note editor | More ⋯ | No action |
-| Note editor | Reply ↳ | Stub in right-click menu, no action |
+| Note editor | Reply ↳ | Stub in right-click menu — Phase C |
 | Composer | Attach ⌇ | No action |
 | Composer | Emoji ☺ | No action |

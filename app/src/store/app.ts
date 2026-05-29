@@ -13,6 +13,8 @@ interface AppState {
   scanlines: boolean
   // Settings modal
   settingsOpen: boolean
+  // Capture modal
+  captureOpen: boolean
   // Navigation
   activeWorkspace: string
   openNoteId: string | null
@@ -28,6 +30,7 @@ interface AppState {
   setShowGrid: (v: boolean) => void
   setScanlines: (v: boolean) => void
   setSettingsOpen: (v: boolean) => void
+  setCaptureOpen: (v: boolean) => void
   setActiveWorkspace: (w: string) => void
   setOpenNoteId: (id: string | null) => void
   setOpenNoteLinkedEvent: (e: CalendarEvent | null) => void
@@ -46,6 +49,7 @@ export const useAppStore = create<AppState>((set) => ({
   openNoteId: null,
   openNoteLinkedEvent: null,
   settingsOpen: false,
+  captureOpen: false,
   drag: null,
   dragOver: null,
   setTheme:            (theme)           => set({ theme }),
@@ -54,10 +58,11 @@ export const useAppStore = create<AppState>((set) => ({
   setHeatmapScale:     (heatmapScale)    => set({ heatmapScale }),
   setShowGrid:         (showGrid)        => set({ showGrid }),
   setScanlines:        (scanlines)       => set({ scanlines }),
+  setSettingsOpen:     (settingsOpen)    => set({ settingsOpen }),
+  setCaptureOpen:      (captureOpen)     => set({ captureOpen }),
   setActiveWorkspace:  (activeWorkspace) => set({ activeWorkspace }),
   setOpenNoteId:           (openNoteId)           => set({ openNoteId }),
   setOpenNoteLinkedEvent:  (openNoteLinkedEvent)  => set({ openNoteLinkedEvent }),
   setDrag:             (drag)            => set({ drag }),
   setDragOver:         (dragOver)        => set({ dragOver }),
-  setSettingsOpen:     (settingsOpen)    => set({ settingsOpen }),
 }))

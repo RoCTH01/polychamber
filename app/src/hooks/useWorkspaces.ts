@@ -40,11 +40,20 @@ export function useWorkspaces() {
     return ws
   }
 
-  const addWidget = async (wsId: string, currentLayout: LayoutItem[], type: WidgetType) => {
+  const addWidget = async (wsId: string, currentLayout: LayoutItem[], type: WidgetType, config?: Record<string, unknown>) => {
     const bottom = currentLayout.reduce((max, it) => Math.max(max, it.y + it.h), 0)
     const { w, h } = DEFAULT_SIZES[type]
-    const newItem: LayoutItem = { id: crypto.randomUUID(), type, x: 0, y: bottom, w, h }
+    const newItem: LayoutItem = { id: crypto.randomUUID(), type, x: 0, y: bottom, w, h, ...(config ? { config } : {}) }
     await updateLayout(wsId, [...currentLayout, newItem])
+  }
+
+  const updateWidgetConfig = async (wsId: string, widgetId: string, config: Record<string, unknown>) => {
+    const ws = data?.workspaces.find(w => w.id === wsId)
+    if (!ws) return
+    const layout = ws.layout.map(item =>
+      item.id === widgetId ? { ...item, config } : item
+    )
+    await updateLayout(wsId, layout)
   }
 
   return {
@@ -53,6 +62,7 @@ export function useWorkspaces() {
     updateLayout,
     createWorkspace,
     addWidget,
+    updateWidgetConfig,
     mutate,
   }
 }

@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { items, itemReminder, itemFunnel, itemFocus, itemMessage } from '@/lib/db/schema'
-import { eq, isNull, desc, and, sql } from 'drizzle-orm'
+import { eq, isNull, isNotNull, desc, and, sql } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams
-  const kind     = sp.get('kind')
-  const src      = sp.get('src')
-  const parentId = sp.get('parentId')  // 'null' string = root items only
-  const limit    = Math.min(parseInt(sp.get('limit') ?? '100'), 500)
-  const offset   = parseInt(sp.get('offset') ?? '0')
+  const kind      = sp.get('kind')
+  const src       = sp.get('src')
+  const parentId  = sp.get('parentId')
+  const hasFunnel = sp.get('hasFunnel') === 'true'
+  const noSrc     = sp.get('noSrc') === 'true'
+  const limit     = Math.min(parseInt(sp.get('limit') ?? '100'), 500)
+  const offset    = parseInt(sp.get('offset') ?? '0')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const conditions: any[] = []
@@ -18,6 +20,8 @@ export async function GET(request: NextRequest) {
   if (sp.has('parentId')) {
     conditions.push(parentId === 'null' ? isNull(items.parentId) : eq(items.parentId, parentId!))
   }
+  if (hasFunnel) conditions.push(isNotNull(itemFunnel.itemId))
+  if (noSrc)     conditions.push(isNull(items.src))
 
   const rows = await db
     .select()
@@ -59,7 +63,7 @@ export async function POST(request: NextRequest) {
   if (kind === 'reminder' && reminder) {
     await db.insert(itemReminder).values({ itemId: item.id, ...reminder })
   }
-  if (kind === 'funnel_item' && funnel) {
+  if (funnel) {
     await db.insert(itemFunnel).values({ itemId: item.id, ...funnel })
   }
   if (kind === 'focus_session' && focus) {

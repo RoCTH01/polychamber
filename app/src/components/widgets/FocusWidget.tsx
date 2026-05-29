@@ -5,7 +5,7 @@ import WidgetShell from './WidgetShell'
 import { useItems } from '@/hooks/useItems'
 import type { DragHandlers } from '@/types'
 
-interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void }
+interface Props { id: string; dragHandlers: DragHandlers; onClose: () => void; config?: Record<string, unknown> }
 
 const TARGET = 50 * 60 // 50 min in seconds
 

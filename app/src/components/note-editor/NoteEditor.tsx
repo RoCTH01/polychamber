@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Message from './Message'
 import Composer from './Composer'
 import { useItems } from '@/hooks/useItems'
+import { useContextMenu } from '@/components/ui/ContextMenu'
 import { SRC_LABEL, SRC_NAME } from '@/types'
 import type { Item, CalendarEvent } from '@/types'
 import '@/app/note-editor.css'
@@ -19,6 +20,27 @@ export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Pro
   const scrollRef = useRef<HTMLDivElement>(null)
   const [localTags, setLocalTags] = useState(note.tags)
   const [tagInput, setTagInput]   = useState('')
+
+  const { open: openMenu } = useContextMenu()
+
+  const queueNote = async (queueTag: 'next' | 'soon' | 'later') => {
+    const updatedFunnel = { mediaKind: 'article' as const, source: note.src ?? 'me', est: '', queueTag }
+    onUpdate({ ...note, funnel: updatedFunnel })
+    await fetch(`/api/items/${note.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ funnel: updatedFunnel }),
+    })
+  }
+
+  const handleHeaderContextMenu = (e: React.MouseEvent) => {
+    const alreadyQueued = !!note.funnel
+    openMenu(e, [
+      { label: alreadyQueued ? 'Move to Next'  : 'Queue: Next',  action: () => queueNote('next') },
+      { label: alreadyQueued ? 'Move to Soon'  : 'Queue: Soon',  action: () => queueNote('soon') },
+      { label: alreadyQueued ? 'Move to Later' : 'Queue: Later', action: () => queueNote('later') },
+    ])
+  }
 
   // Thread replies: items with parentId = note.id
   const { items: replies, createItem, updateItem, deleteItem } = useItems({ parentId: note.id })
@@ -60,7 +82,7 @@ export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Pro
   return (
     <aside className="note-editor">
       {/* Header */}
-      <header className="ne-head">
+      <header className="ne-head" onContextMenu={handleHeaderContextMenu}>
         {/* Calendar event badge — shown when this note is linked to an event */}
         {linkedEvent && (
           <div className="ne-event-badge mono">

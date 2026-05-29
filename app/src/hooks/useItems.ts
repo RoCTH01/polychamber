@@ -9,6 +9,8 @@ interface UseItemsParams {
   parentId?: string | 'null'
   limit?: number
   offset?: number
+  hasFunnel?: boolean
+  noSrc?: boolean
 }
 
 export function useItems(params?: UseItemsParams) {
@@ -18,6 +20,8 @@ export function useItems(params?: UseItemsParams) {
   if (params?.parentId !== undefined) sp.set('parentId', params.parentId)
   if (params?.limit)    sp.set('limit', String(params.limit))
   if (params?.offset)   sp.set('offset', String(params.offset))
+  if (params?.hasFunnel) sp.set('hasFunnel', 'true')
+  if (params?.noSrc)     sp.set('noSrc', 'true')
 
   const key = `/api/items?${sp.toString()}`
   const { data, error, isLoading, mutate } = useSWR<{ items: Item[] }>(key, fetcher)

@@ -21,7 +21,7 @@ const WIDGET_TYPES_LIST: { type: WidgetType; label: string }[] = [
   { type: 'reminders', label: 'Reminders' },
 ]
 
-const WIDGET_MAP: Record<WidgetType, React.ComponentType<{ id: string; dragHandlers: DragHandlers; onClose: () => void }>> = {
+const WIDGET_MAP: Record<WidgetType, React.ComponentType<{ id: string; dragHandlers: DragHandlers; onClose: () => void; config?: Record<string, unknown> }>> = {
   heatmap:   HeatmapWidget,
   feed:      FeedWidget,
   calendar:  CalendarWidget,
@@ -349,6 +349,7 @@ export default function WorkspaceGrid() {
                 onClose={() => {
                   if (ws) updateLayout(ws.id, ws.layout.filter(l => l.id !== it.id))
                 }}
+                config={it.config}
               />
 
               {/* Resize handles */}
