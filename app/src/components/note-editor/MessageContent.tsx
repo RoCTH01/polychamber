@@ -93,7 +93,7 @@ export default function MessageContent({ body, message, onToggleTask, onLinkClic
         {fmt(body, onLinkClick)}
       </div>
       {long && (
-        <button className="ne-expand-btn" onClick={() => setExpanded(e => !e)}>
+        <button className="ne-expand-btn" onClick={() => setExpanded(prev => !prev)}>
           {expanded ? 'Show less ↑' : 'Show more ↓'}
         </button>
       )}
