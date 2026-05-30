@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import Sidebar        from '@/components/layout/Sidebar'
 import Toolbar        from '@/components/layout/Toolbar'
 import WorkspaceGrid  from '@/components/layout/WorkspaceGrid'
-import NoteEditor     from '@/components/note-editor/NoteEditor'
+import NotePanel from '@/components/note-editor/NotePanel'
 import SettingsModal        from '@/components/SettingsModal'
 import CaptureModal from '@/components/ui/CaptureModal'
 import { ContextMenuProvider } from '@/components/ui/ContextMenu'
@@ -49,7 +49,7 @@ export default function Page() {
         <WorkspaceGrid />
       </div>
       {openNote && (
-        <NoteEditor
+        <NotePanel
           note={openNote}
           linkedEvent={openNoteLinkedEvent}
           onClose={() => { setOpenNote(null); setOpenNoteLinkedEvent(null) }}
