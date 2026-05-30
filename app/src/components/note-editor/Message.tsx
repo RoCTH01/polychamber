@@ -25,8 +25,10 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
   const { open: openMenu }      = useContextMenu()
 
   const msg   = item.message
-  const isMe  = msg?.who === 'me'
-  const isSrc = msg?.who === 'src'
+  // When there's no itemMessage record (e.g. root notes created outside the Composer),
+  // infer who from item.src: no src → mine, has src → external.
+  const isMe  = msg ? msg.who === 'me'  : item.src === null
+  const isSrc = msg ? msg.who === 'src' : item.src !== null
 
   const commitEdit = () => {
     onUpdate({ body: editText })
@@ -64,8 +66,8 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
       {!isMe && (
         <div className="ne-avatar-col">
           {!grouped ? (
-            <span className={`ne-avatar${isSrc ? ' src' : ''}`}>
-              {isSrc ? (rootSrc ? SRC_LABEL[rootSrc] : '?') : '?'}
+            <span className="ne-avatar src">
+              {rootSrc ? (SRC_LABEL[rootSrc] ?? rootSrc.slice(0, 2).toUpperCase()) : '·'}
             </span>
           ) : (
             <span className="ne-mini-time mono">
@@ -79,7 +81,7 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
         {/* Author header — only for source messages */}
         {!isMe && !grouped && (
           <div className="ne-msg-head">
-            <span className="ne-msg-author">{isSrc ? (rootAuthor ?? 'Source') : 'Unknown'}</span>
+            <span className="ne-msg-author">{rootAuthor ?? (rootSrc ? SRC_NAME[rootSrc] : 'Source')}</span>
             {isSrc && rootSrc && <span className="ne-msg-via mono">via {SRC_NAME[rootSrc]}</span>}
             <span className="ne-msg-t mono">
               {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}

@@ -130,8 +130,10 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
         <div className="ne-head-title">
           {note.src && <span className={`src-icon src-${note.src}`} style={{ width: 22, height: 22, fontSize: 10, borderRadius: 5 }}>{SRC_LABEL[note.src]}</span>}
           <div className="ne-head-stack">
-            <input className="ne-title-input" value={note.author ?? ''} placeholder="Author"
-              onChange={e => onUpdate({ ...note, author: e.target.value })} />
+            {note.src && (
+              <input className="ne-title-input" value={note.author ?? ''} placeholder="Author"
+                onChange={e => onUpdate({ ...note, author: e.target.value })} />
+            )}
             <div className="ne-head-meta mono">
               {note.src && <><span>{SRC_NAME[note.src]}</span><span>·</span></>}
               <span className="tab">{allItems.length} msg</span>
