@@ -136,7 +136,7 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
             style={note.starred ? { color: 'var(--warn)' } : undefined}
             onClick={() => onUpdate({ ...note, starred: !note.starred })}>★</button>
           <button className="ne-icon-btn" title="More">⋯</button>
-          <button className="ne-icon-btn" title="Close" onClick={onClose}>✕</button>
+          <button className="ne-icon-btn" title="Close" onClick={() => { saveDoc(); onClose() }}>✕</button>
         </div>
       </header>
 
@@ -144,12 +144,12 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
       <div className="np-mode-bar">
         <button
           className={`np-mode-btn${openNoteMode === 'document' ? ' active' : ''}`}
-          onClick={() => setOpenNoteMode('document')}>
+          onClick={() => { setDocBody(note.body); setOpenNoteMode('document') }}>
           document
         </button>
         <button
           className={`np-mode-btn${openNoteMode === 'thread' ? ' active' : ''}`}
-          onClick={() => setOpenNoteMode('thread')}>
+          onClick={() => { saveDoc(); setOpenNoteMode('thread') }}>
           thread
         </button>
       </div>

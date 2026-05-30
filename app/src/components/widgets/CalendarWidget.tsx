@@ -39,6 +39,7 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
   const { events, createAndLinkNote, linkNote, mutate } = useCalendarEvents(weekStartStr)
   const { createItem } = useItems({ kind: 'note', parentId: 'null' })
   const setOpenNote        = useAppStore(s => s.setOpenNoteId)
+  const setOpenNoteMode    = useAppStore(s => s.setOpenNoteMode)
   const setOpenNoteLinkedEvent = useAppStore(s => s.setOpenNoteLinkedEvent)
   const { open: openMenu } = useContextMenu()
 
@@ -47,7 +48,7 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
     e.stopPropagation()
     if (ev.linkedNoteId) {
       openMenu(e, [
-        { label: 'Open linked note', action: () => { setOpenNoteLinkedEvent(ev); setOpenNote(ev.linkedNoteId!) } },
+        { label: 'Open linked note', action: () => { setOpenNoteLinkedEvent(ev); setOpenNoteMode('thread'); setOpenNote(ev.linkedNoteId!) } },
         { divider: true },
         { label: 'Unlink note', danger: true, action: () => linkNote(ev.id, null) },
       ])
@@ -56,6 +57,7 @@ export default function CalendarWidget({ id, dragHandlers, onClose }: Props) {
         { label: 'New linked note', action: async () => {
           const note = await createAndLinkNote(ev)
           setOpenNoteLinkedEvent({ ...ev, linkedNoteId: note.id })
+          setOpenNoteMode('thread')
           setOpenNote(note.id)
         }},
       ])
