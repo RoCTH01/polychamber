@@ -20,3 +20,13 @@ export function relativeTime(date: Date): string {
   if (diffH < 24) return `${diffH}h ago`
   return `${Math.floor(diffH / 24)}d ago`
 }
+
+/**
+ * Returns true if the text is long enough to warrant a collapse/expand toggle.
+ * Heuristic: counts explicit newlines plus estimated soft-wrap lines at 80 chars.
+ */
+export function isLongText(body: string, threshold = 5): boolean {
+  const newlines = (body.match(/\n/g) ?? []).length
+  const estimatedLines = Math.ceil(body.length / 80)
+  return (newlines + estimatedLines) > threshold
+}

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { weekStartFor, relativeTime } from './utils'
+import { weekStartFor, relativeTime, isLongText } from './utils'
 
 describe('weekStartFor', () => {
   // Wednesday 2026-05-20 noon UTC — getDay()=3, dow=(3+6)%7=2 → Monday=May 18
@@ -32,5 +32,33 @@ describe('relativeTime', () => {
   test('2 days ago returns "2d ago"', () => {
     const d = new Date(Date.now() - 2 * 86_400_000)
     expect(relativeTime(d)).toBe('2d ago')
+  })
+})
+
+describe('isLongText', () => {
+  test('short single-line text is not long', () => {
+    expect(isLongText('Hello world')).toBe(false)
+  })
+
+  test('text with more than 5 explicit newlines is long', () => {
+    expect(isLongText('a\nb\nc\nd\ne\nf')).toBe(true)
+  })
+
+  test('very long single-line text is long', () => {
+    expect(isLongText('x'.repeat(500))).toBe(true)
+  })
+
+  test('text at exactly the threshold is not long', () => {
+    // 4 newlines + short lines → newlines(4) + estimatedLines(1) = 5, not > 5
+    expect(isLongText('a\nb\nc\nd\ne')).toBe(false)
+  })
+
+  test('one more line than threshold is long', () => {
+    expect(isLongText('a\nb\nc\nd\ne\nf')).toBe(true)
+  })
+
+  test('respects custom threshold', () => {
+    expect(isLongText('a\nb\nc', 2)).toBe(true)
+    expect(isLongText('a\nb', 2)).toBe(false)
   })
 })
