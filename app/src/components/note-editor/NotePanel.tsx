@@ -93,6 +93,15 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
     if (docBody !== note.body) onUpdate({ ...note, body: docBody })
   }
 
+  // Debounced auto-save: fires 1500ms after the last keystroke.
+  // onBlur still saves immediately on focus-loss; this covers the "user paused" case.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (docBody === note.body) return
+    const timer = setTimeout(() => onUpdate({ ...note, body: docBody }), 1500)
+    return () => clearTimeout(timer)
+  }, [docBody]) // intentionally excludes note/onUpdate — stale-closure window is only 1.5s
+
   const addTag = (tag: string) => {
     const next = [...localTags, tag]
     setLocalTags(next)
@@ -166,7 +175,7 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
           onChange={e => setTagInput(e.target.value.replace(/\s+/g, ''))}
           onKeyDown={e => { if (e.key === 'Enter' && tagInput) { addTag(tagInput); setTagInput('') } }} />
         <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 9.5, color: 'var(--text-4)', letterSpacing: '0.06em' }}>
-          {openNoteMode === 'thread' ? 'THREAD' : 'DOC'} · {note.id.slice(0, 8).toUpperCase()}
+          {openNoteMode === 'thread' ? 'THREAD' : 'DOC'}{openNoteMode === 'document' && docBody !== note.body ? ' ●' : ''} · {note.id.slice(0, 8).toUpperCase()}
         </span>
       </div>
 
