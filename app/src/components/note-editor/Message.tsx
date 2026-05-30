@@ -19,14 +19,14 @@ interface Props {
 }
 
 export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTask, onUpdate, onDelete, onReact, onLinkClick }: Props) {
-  const [hover, setHover]           = useState(false)
-  const [editing, setEditing]       = useState(false)
-  const [editText, setEditText]     = useState(item.body)
-  const { open: openMenu }          = useContextMenu()
+  const [hover, setHover]       = useState(false)
+  const [editing, setEditing]   = useState(false)
+  const [editText, setEditText] = useState(item.body)
+  const { open: openMenu }      = useContextMenu()
 
-  const msg    = item.message
-  const isMe   = msg?.who === 'me'
-  const isSrc  = msg?.who === 'src'
+  const msg   = item.message
+  const isMe  = msg?.who === 'me'
+  const isSrc = msg?.who === 'src'
 
   const commitEdit = () => {
     onUpdate({ body: editText })
@@ -45,7 +45,8 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
   }
 
   return (
-    <div className={`ne-msg${grouped ? ' grouped' : ''}${isSrc ? ' src' : ''}`}
+    <div
+      className={`ne-msg${grouped ? ' grouped' : ''}${isSrc ? ' src' : ''}${isMe ? ' mine' : ''}`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onContextMenu={e => {
@@ -59,26 +60,37 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
         openMenu(e, menuItems)
       }}>
 
-      <div className="ne-avatar-col">
-        {!grouped ? (
-          <span className={`ne-avatar${isMe ? ' me' : ''}${isSrc ? ' src' : ''}`}>
-            {isMe ? 'me' : isSrc ? (rootSrc ? SRC_LABEL[rootSrc] : '?') : '?'}
-          </span>
-        ) : (
-          <span className="ne-mini-time mono">
-            {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-          </span>
-        )}
-      </div>
+      {/* Avatar column — only rendered for source messages */}
+      {!isMe && (
+        <div className="ne-avatar-col">
+          {!grouped ? (
+            <span className={`ne-avatar${isSrc ? ' src' : ''}`}>
+              {isSrc ? (rootSrc ? SRC_LABEL[rootSrc] : '?') : '?'}
+            </span>
+          ) : (
+            <span className="ne-mini-time mono">
+              {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="ne-msg-body">
-        {!grouped && (
+        {/* Author header — only for source messages */}
+        {!isMe && !grouped && (
           <div className="ne-msg-head">
-            <span className="ne-msg-author">{isMe ? 'You' : isSrc ? (rootAuthor ?? 'Source') : 'Unknown'}</span>
+            <span className="ne-msg-author">{isSrc ? (rootAuthor ?? 'Source') : 'Unknown'}</span>
             {isSrc && rootSrc && <span className="ne-msg-via mono">via {SRC_NAME[rootSrc]}</span>}
             <span className="ne-msg-t mono">
               {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
             </span>
+          </div>
+        )}
+
+        {/* Timestamp shown on hover for own messages */}
+        {isMe && hover && !grouped && (
+          <div className="ne-me-time mono">
+            {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
           </div>
         )}
 
@@ -87,7 +99,10 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
             <textarea className="ne-edit-input" value={editText} autoFocus
               rows={Math.max(1, editText.split('\n').length)}
               onChange={e => setEditText(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Escape') setEditing(false); if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) commitEdit() }}
+              onKeyDown={e => {
+                if (e.key === 'Escape') setEditing(false)
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) commitEdit()
+              }}
             />
             <div className="ne-edit-actions">
               <span className="mono" style={{ fontSize: 9.5, color: 'var(--text-4)' }}>esc to cancel · ⌘⏎ to save</span>

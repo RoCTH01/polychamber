@@ -162,7 +162,6 @@ export default function Composer({ noteId, onSend }: Props) {
         {(mode === 'notePicker-link' || mode === 'notePicker-reference') && (
           <NotePicker excludeId={noteId} onSelect={handleNotePick} onDismiss={handleDismiss} />
         )}
-        <span className="ne-avatar me">me</span>
         <textarea
           ref={textareaRef}
           className="ne-input"
