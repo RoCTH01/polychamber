@@ -34,6 +34,11 @@ Everything is a first-class item — notes you write and content you save from o
 | **Heatmap v2** | Per-instance config (all activity / tag filter / habit tracker); gear panel; weekly habit progress bar |
 | **Tag → heatmap shortcut** | Right-click any tag chip in Feed → "Track #tag in heatmap" adds a pre-configured instance |
 | **Widget config persistence** | Each widget instance stores its own config in `ws.layout` JSONB; survives reload |
+| **NotePanel — document + thread modes** | Right panel switches between full markdown editor (document mode) and chat-style thread; mode persists across note navigation |
+| **Note titles** | Optional title field per note; shown prominently in Feed and as a styled heading in document mode |
+| **Feed hover actions** | ✎ Edit and ⌨ Thread buttons appear on row hover; click-to-open removed in favour of explicit intent |
+| **Debounced auto-save** | Document body and title auto-save 1.5s after last keystroke; dirty indicator `●` while pending; immediate flush on blur/close/mode-switch |
+| **Thread timestamps** | Messages show full `MMM D · HH:MM` for older messages, `HH:MM` for today; panel header shows "edited X ago" |
 
 ---
 
@@ -77,6 +82,19 @@ Everything is a first-class item — notes you write and content you save from o
 - **Calendar widget right-click** — "New linked note" / "Open linked note" / "Unlink note" depending on link state
 - **Note indicator dot** — small coloured dot on event blocks that have a linked note
 - **NoteEditor event badge** — tinted bar in the note header showing event title, day, and time when opened from a calendar event
+
+### NotePanel redesign — document & thread mode
+
+- **Document / thread mode split** — right panel now has a mode toggle; document mode is a full-width markdown editor for the note body; thread mode is the existing chat stream; mode persists in Zustand across note navigation
+- **Optional note title** — nullable `title` column added to `items`; title input appears at the top of document mode (18px bold, placeholder "Untitled"); shown in Feed above the body preview when set (body dims to secondary colour); blank title saved as null
+- **Feed hover buttons** — ✎ (open in document mode) and ⌨ (open in thread mode) appear on row hover; whole-row click-to-open removed in favour of explicit intent; context menu updated to match
+- **Single-user message cleanup** — `who='me'` messages no longer show avatar or author header; timestamp shown on hover only; `isMe`/`isSrc` now inferred from `item.src` when no `itemMessage` record exists, eliminating "Unknown" / "?" fallbacks
+- **Long message collapsing** — `text` messages over ~5 visual lines collapse with "Show more ↓" / "Show less ↑" toggle; uses `isLongText` pure utility
+- **Debounced auto-save** — body and title auto-save 1.5s after last keystroke; dirty indicator `●` next to DOC label while changes are pending; immediate flush on blur, mode-switch, and close
+- **Thread timestamps** — `formatMsgTime` utility: today's messages show `HH:MM`, older messages show `MMM D · HH:MM`
+- **Last edited** — panel header meta row now shows "edited X ago" (`relativeTime` on `updatedAt`) instead of "opened HH:MM"
+- **Author field hidden for own notes** — author input only shown for source notes (`note.src` set); user-created notes have no author attribution
+- **Save bug fixed** — `createdAt`/`updatedAt` JSON strings were causing Drizzle to throw `toISOString is not a function` in PATCH; those fields are now stripped before the Drizzle `set()` call; `updateItem` now logs non-OK PATCH responses
 
 ### Visual design refresh
 - **Warm neutral color system** — dark theme shifted to near-neutral warm base (`oklch` hue 60) with amber accent; light and high-contrast themes updated to match
@@ -138,22 +156,6 @@ Everything is a first-class item — notes you write and content you save from o
 - **NotePicker** — search-as-you-type over cached notes; arrow keys + Enter navigate; self-link excluded
 - **Backlinks panel** — LINKED FROM section pinned below message stream; only shown when links exist; clicking a row opens the linking note; ordered by recency
 - **SWR invalidation** — target note's backlinks panel refreshes immediately after any link is created
-
----
-
-## Phase C — Note-to-note linking ✓ Complete
-
-The PKM layer — ideas connecting to each other.
-
-| Feature | Details |
-|---|---|
-| **`item_links` table** | `(from_id, to_id, link_kind)` edge table; cascade deletes both ends; `UNIQUE(from_id, to_id)`; `from_id` is the specific message item so sibling replies don't orphan each other's links |
-| **`[[uuid:Title]]` inline chips** | `parseLinks` utility parses tokens from body; `fmt()` in MessageContent renders amber clickable chips mid-text; body encoding stores title at insert time |
-| **Reference blocks** | `/` → Reference → note picker → auto-sends child message with `messageKind='note_ref'`; renders as a bordered card in the stream |
-| **`/` slash command** | Composer detects `/` after whitespace; shows SlashMenu with Link, Reference, Task, Quote; letter filtering narrows options; arrow keys + Enter navigate; refocuses textarea on dismiss |
-| **NotePicker** | Search-as-you-type dropdown over cached `useItems` data; arrow keys + Enter navigate; mouse hover syncs; excludes self-links; max 8 results |
-| **Backlinks panel** | LINKED FROM section pinned below message stream; only renders when links exist; clickable rows open the linking note; ordered by recency |
-| **Link sync** | `POST /api/items` and `PATCH /api/items/[id]` re-parse body and sync `item_links` rows; `note_ref` messages also write a reference edge; SWR invalidation on both inline and reference sends |
 
 ---
 
@@ -232,9 +234,7 @@ Foundation and Phase A establish what the product *is*. Phase E (ingestion) is s
 
 | Location | Button | Status |
 |---|---|---|
-| Toolbar | + Capture | Stub — Phase A |
 | Toolbar | Search bar / ⌘K | Shortcut registered, no modal — Phase D |
-| Note editor | More ⋯ | No action |
-| Note editor | Reply ↳ | Stub in right-click menu — Phase C |
+| Note panel | More ⋯ | No action |
 | Composer | Attach ⌇ | No action |
 | Composer | Emoji ☺ | No action |
