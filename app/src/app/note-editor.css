@@ -192,9 +192,9 @@
   text-align: left; cursor: default;
   color: var(--text-2); font: 11.5px/1 var(--font-ui);
 }
-.ne-slash-opt:hover { background: var(--panel-2); color: var(--text); }
+.ne-slash-opt:hover, .ne-slash-opt.selected { background: var(--panel-2); color: var(--text); }
 .ne-slash-opt:first-child { color: var(--accent); }
-.ne-slash-opt:first-child:hover { background: var(--accent-soft); }
+.ne-slash-opt:first-child:hover, .ne-slash-opt:first-child.selected { background: var(--accent-soft); }
 .ne-slash-icon { font-size: 12px; width: 16px; text-align: center; flex-shrink: 0; }
 .ne-slash-label { flex: 1; }
 .ne-slash-hint { font-size: 9.5px; color: var(--text-4); }

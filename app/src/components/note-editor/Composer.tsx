@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import SlashMenu from './SlashMenu'
+import { useMemo, useState } from 'react'
+import SlashMenu, { SLASH_OPTIONS } from './SlashMenu'
 import NotePicker from './NotePicker'
 import type { Item, MessageKind } from '@/types'
 
@@ -21,10 +21,21 @@ const KINDS = [
 type KindKey = typeof KINDS[number]['k']
 
 export default function Composer({ noteId, onSend }: Props) {
-  const [body, setBody]         = useState('')
-  const [kind, setKind]         = useState<KindKey>('text')
-  const [mode, setMode]         = useState<ComposerMode>('normal')
-  const [slashPos, setSlashPos] = useState(0)
+  const [body, setBody]             = useState('')
+  const [kind, setKind]             = useState<KindKey>('text')
+  const [mode, setMode]             = useState<ComposerMode>('normal')
+  const [slashPos, setSlashPos]     = useState(0)
+  const [slashQuery, setSlashQuery] = useState('')
+  const [slashIndex, setSlashIndex] = useState(0)
+
+  // Filter options by query — reset selection to 0 when query changes
+  const filteredOptions = useMemo(
+    () => SLASH_OPTIONS.filter(opt =>
+      opt.label.toLowerCase().includes(slashQuery.toLowerCase()) ||
+      opt.id.toLowerCase().includes(slashQuery.toLowerCase())
+    ),
+    [slashQuery],
+  )
 
   const send = () => {
     if (!body.trim()) return
@@ -33,21 +44,55 @@ export default function Composer({ noteId, onSend }: Props) {
     setKind('text')
   }
 
+  const resetSlash = () => {
+    setSlashQuery('')
+    setSlashIndex(0)
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value
     setBody(val)
-    const last = val[val.length - 1]
-    const prev = val.length > 1 ? val[val.length - 2] : null
-    if (mode === 'normal' && last === '/' && (prev === null || /[\s\n]/.test(prev))) {
-      setMode('slash')
-      setSlashPos(val.length - 1)
+
+    if (mode === 'normal') {
+      const last = val[val.length - 1]
+      const prev = val.length > 1 ? val[val.length - 2] : null
+      if (last === '/' && (prev === null || /[\s\n]/.test(prev))) {
+        setMode('slash')
+        setSlashPos(val.length - 1)
+        resetSlash()
+      }
     } else if (mode === 'slash') {
-      setMode('normal')
+      if (val.length <= slashPos) {
+        // User deleted the / itself — dismiss
+        setMode('normal')
+        resetSlash()
+      } else {
+        const afterSlash = val.slice(slashPos + 1)
+        // Allow only letters as query; anything else (space, number, symbol) dismisses
+        if (/^[a-zA-Z]*$/.test(afterSlash)) {
+          const matches = SLASH_OPTIONS.filter(opt =>
+            opt.label.toLowerCase().includes(afterSlash.toLowerCase()) ||
+            opt.id.toLowerCase().includes(afterSlash.toLowerCase())
+          )
+          if (afterSlash !== '' && matches.length === 0) {
+            // No options match — dismiss
+            setMode('normal')
+            resetSlash()
+          } else {
+            setSlashQuery(afterSlash)
+            setSlashIndex(0)  // Reset to first match on every query change
+          }
+        } else {
+          setMode('normal')
+          resetSlash()
+        }
+      }
     }
   }
 
   const handleSlashSelect = (id: 'link' | 'reference' | 'task' | 'quote') => {
     const trimmed = body.slice(0, slashPos)
+    resetSlash()
     if (id === 'link') {
       setBody(trimmed)
       setMode('notePicker-link')
@@ -78,6 +123,7 @@ export default function Composer({ noteId, onSend }: Props) {
   const handleDismiss = () => {
     setBody(b => b.slice(0, slashPos))
     setMode('normal')
+    resetSlash()
   }
 
   const placeholder = KINDS.find(k2 => k2.k === kind)?.placeholder ?? ''
@@ -93,8 +139,14 @@ export default function Composer({ noteId, onSend }: Props) {
         <span className="ne-fmt-hint mono">**bold** · *italic* · `code` · / commands</span>
       </div>
       <div className="ne-input-wrap" style={{ position: 'relative' }}>
-        {mode === 'slash' && (
-          <SlashMenu onSelect={handleSlashSelect} onDismiss={handleDismiss} />
+        {mode === 'slash' && filteredOptions.length > 0 && (
+          <SlashMenu
+            options={filteredOptions}
+            selectedIndex={Math.min(slashIndex, filteredOptions.length - 1)}
+            onSelect={handleSlashSelect}
+            onHover={setSlashIndex}
+            onDismiss={handleDismiss}
+          />
         )}
         {(mode === 'notePicker-link' || mode === 'notePicker-reference') && (
           <NotePicker excludeId={noteId} onSelect={handleNotePick} onDismiss={handleDismiss} />
@@ -107,6 +159,24 @@ export default function Composer({ noteId, onSend }: Props) {
           onChange={handleChange}
           rows={Math.max(1, body.split('\n').length)}
           onKeyDown={e => {
+            if (mode === 'slash' && filteredOptions.length > 0) {
+              if (e.key === 'ArrowDown') {
+                e.preventDefault()
+                setSlashIndex(i => (i + 1) % filteredOptions.length)
+                return
+              }
+              if (e.key === 'ArrowUp') {
+                e.preventDefault()
+                setSlashIndex(i => (i - 1 + filteredOptions.length) % filteredOptions.length)
+                return
+              }
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                const opt = filteredOptions[Math.min(slashIndex, filteredOptions.length - 1)]
+                if (opt) handleSlashSelect(opt.id)
+                return
+              }
+            }
             if (e.key === 'Escape' && mode !== 'normal') { handleDismiss(); return }
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send() }
           }}
