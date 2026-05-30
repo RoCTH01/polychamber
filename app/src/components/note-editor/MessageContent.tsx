@@ -1,4 +1,8 @@
+'use client'
+
+import { useState } from 'react'
 import type { ItemMessage } from '@/types'
+import { isLongText } from '@/lib/utils'
 
 interface Props {
   body: string
@@ -39,6 +43,7 @@ function fmt(text: string, onLinkClick?: (id: string) => void): React.ReactNode[
 }
 
 export default function MessageContent({ body, message, onToggleTask, onLinkClick }: Props) {
+  const [expanded, setExpanded] = useState(false)
   const kind = message?.messageKind
 
   if (kind === 'note_ref') {
@@ -80,5 +85,18 @@ export default function MessageContent({ body, message, onToggleTask, onLinkClic
   if (kind === 'link')  return <a className="ne-link" href={body} onClick={e => e.preventDefault()}>{body}</a>
   if (kind === 'quote') return <blockquote className="ne-quote">{fmt(body, onLinkClick)}</blockquote>
 
-  return <div className="ne-text">{fmt(body, onLinkClick)}</div>
+  // Plain text — collapse if long
+  const long = isLongText(body)
+  return (
+    <div>
+      <div className={`ne-text${long && !expanded ? ' ne-text-collapsed' : ''}`}>
+        {fmt(body, onLinkClick)}
+      </div>
+      {long && (
+        <button className="ne-expand-btn" onClick={() => setExpanded(e => !e)}>
+          {expanded ? 'Show less ↑' : 'Show more ↓'}
+        </button>
+      )}
+    </div>
+  )
 }
