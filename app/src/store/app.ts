@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { Theme, Density, HeatmapScale, CalendarEvent } from '@/types'
 
 export type FontSize = 'small' | 'medium' | 'large'
+export type NoteMode = 'document' | 'thread'
 
 interface AppState {
   // Appearance
@@ -18,6 +19,7 @@ interface AppState {
   // Navigation
   activeWorkspace: string
   openNoteId: string | null
+  openNoteMode: NoteMode
   openNoteLinkedEvent: CalendarEvent | null
   // Drag-to-swap
   drag: { id: string } | null
@@ -33,6 +35,7 @@ interface AppState {
   setCaptureOpen: (v: boolean) => void
   setActiveWorkspace: (w: string) => void
   setOpenNoteId: (id: string | null) => void
+  setOpenNoteMode: (mode: NoteMode) => void
   setOpenNoteLinkedEvent: (e: CalendarEvent | null) => void
   setDrag: (drag: { id: string } | null) => void
   setDragOver: (id: string | null) => void
@@ -47,6 +50,7 @@ export const useAppStore = create<AppState>((set) => ({
   scanlines: false,
   activeWorkspace: 'research',
   openNoteId: null,
+  openNoteMode: 'thread',
   openNoteLinkedEvent: null,
   settingsOpen: false,
   captureOpen: false,
@@ -62,6 +66,7 @@ export const useAppStore = create<AppState>((set) => ({
   setCaptureOpen:      (captureOpen)     => set({ captureOpen }),
   setActiveWorkspace:  (activeWorkspace) => set({ activeWorkspace }),
   setOpenNoteId:           (openNoteId)           => set({ openNoteId }),
+  setOpenNoteMode:         (openNoteMode)         => set({ openNoteMode }),
   setOpenNoteLinkedEvent:  (openNoteLinkedEvent)  => set({ openNoteLinkedEvent }),
   setDrag:             (drag)            => set({ drag }),
   setDragOver:         (dragOver)        => set({ dragOver }),
