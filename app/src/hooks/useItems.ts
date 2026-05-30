@@ -43,11 +43,12 @@ export function useItems(params?: UseItemsParams) {
       { items: (data?.items ?? []).map(item => item.id === id ? { ...item, ...patch } : item) },
       false,
     )
-    await fetch(`/api/items/${id}`, {
+    const res = await fetch(`/api/items/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
     })
+    if (!res.ok) console.error('[updateItem] PATCH failed', res.status)
     mutate()
   }
 

@@ -9,7 +9,10 @@ type Ctx = { params: Promise<{ id: string }> }
 export async function PATCH(request: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params
   const body = await request.json()
-  const { reminder, funnel, focus, message, ...itemPatch } = body
+  // Strip server-managed fields — createdAt/updatedAt arrive as ISO strings from
+  // JSON serialisation and Drizzle's timestamp mapper calls .toISOString() on them,
+  // throwing if the value is already a string. id is a PK and should never be patched.
+  const { reminder, funnel, focus, message, id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...itemPatch } = body
 
   if (Object.keys(itemPatch).length) {
     await db.update(items).set({ ...itemPatch, updatedAt: new Date() }).where(eq(items.id, id))
