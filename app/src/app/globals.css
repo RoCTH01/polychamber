@@ -557,7 +557,7 @@ html, body {
 .funnel-row .funnel-actions:focus-within { opacity: 1; }
 
 /* ── Feed rows ───────────────────────────────────────────────────────────── */
-.feed-row { cursor: default; transition: background 0.08s; }
+.feed-row { position: relative; cursor: default; transition: background 0.08s; }
 .feed-row:hover { background: oklch(from var(--accent) l c h / 0.05); }
 .feed-row.active {
   background: var(--accent-soft);
