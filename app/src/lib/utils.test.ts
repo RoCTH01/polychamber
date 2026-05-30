@@ -49,7 +49,7 @@ describe('isLongText', () => {
   })
 
   test('text at exactly the threshold is not long', () => {
-    // 4 newlines + short lines → newlines(4) + estimatedLines(1) = 5, not > 5
+    // 5 short lines → 5 visual lines, not > 5
     expect(isLongText('a\nb\nc\nd\ne')).toBe(false)
   })
 

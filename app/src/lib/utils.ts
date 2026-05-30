@@ -23,10 +23,12 @@ export function relativeTime(date: Date): string {
 
 /**
  * Returns true if the text is long enough to warrant a collapse/expand toggle.
- * Heuristic: counts explicit newlines plus estimated soft-wrap lines at 80 chars.
+ * Splits on explicit newlines, then estimates soft-wrap lines at 80 chars per visual line.
  */
 export function isLongText(body: string, threshold = 5): boolean {
-  const newlines = (body.match(/\n/g) ?? []).length
-  const estimatedLines = Math.ceil(body.length / 80)
-  return (newlines + estimatedLines) > threshold
+  const visualLines = body.split('\n').reduce(
+    (acc, line) => acc + Math.ceil((line.length || 1) / 80),
+    0,
+  )
+  return visualLines > threshold
 }

@@ -144,7 +144,7 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
       <div className="np-mode-bar">
         <button
           className={`np-mode-btn${openNoteMode === 'document' ? ' active' : ''}`}
-          onClick={() => { setDocBody(note.body); setOpenNoteMode('document') }}>
+          onClick={() => { if (openNoteMode !== 'document') setDocBody(note.body); setOpenNoteMode('document') }}>
           document
         </button>
         <button
