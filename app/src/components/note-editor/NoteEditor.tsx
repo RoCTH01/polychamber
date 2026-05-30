@@ -8,6 +8,9 @@ import { useContextMenu } from '@/components/ui/ContextMenu'
 import { SRC_LABEL, SRC_NAME } from '@/types'
 import type { Item, CalendarEvent } from '@/types'
 import '@/app/note-editor.css'
+import { useItemLinks } from '@/hooks/useItemLinks'
+import { useAppStore } from '@/store/app'
+import { relativeTime } from '@/lib/utils'
 
 interface Props {
   note: Item
@@ -22,6 +25,9 @@ export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Pro
   const [tagInput, setTagInput]   = useState('')
 
   const { open: openMenu } = useContextMenu()
+
+  const setOpenNote   = useAppStore(s => s.setOpenNoteId)
+  const { backlinks } = useItemLinks(note.id)
 
   const queueNote = async (queueTag: 'next' | 'soon' | 'later') => {
     const updatedFunnel = { mediaKind: 'article' as const, source: note.src ?? 'me', est: '', queueTag }
@@ -152,10 +158,32 @@ export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Pro
               }}
               onDelete={() => { if (item.id !== note.id) deleteItem(item.id) }}
               onReact={() => {}}
+              onLinkClick={noteId => setOpenNote(noteId)}
             />
           )
         })}
       </div>
+
+      {backlinks.length > 0 && (
+        <div className="ne-backlinks">
+          <div className="ne-backlinks-header mono">
+            <span>LINKED FROM</span>
+            <span className="ne-backlinks-count">{backlinks.length}</span>
+          </div>
+          {backlinks.map(bl => (
+            <button key={bl.id} className="ne-backlinks-row"
+              onClick={() => setOpenNote(bl.id)}>
+              <span className="ne-backlinks-arrow">↗</span>
+              <span className="ne-backlinks-title">
+                {bl.author ?? bl.body.slice(0, 50)}
+              </span>
+              <span className="ne-backlinks-age mono">
+                {relativeTime(new Date(bl.createdAt))}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <Composer onSend={send} noteId={note.id} />
     </aside>

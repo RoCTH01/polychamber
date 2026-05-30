@@ -244,3 +244,26 @@
 .ne-note-ref:hover { background: var(--panel-hi); }
 .ne-note-ref-label { font-size: 9.5px; color: var(--text-4); letter-spacing: 0.06em; margin-bottom: 3px; }
 .ne-note-ref-title { font-size: 12.5px; font-weight: 600; color: var(--accent); }
+
+/* Backlinks panel */
+.ne-backlinks { flex-shrink: 0; border-top: 1px solid var(--border-subtle); background: var(--bg); }
+.ne-backlinks-header {
+  display: flex; align-items: center; gap: 8px; padding: 5px 12px 4px;
+  font-size: 9.5px; color: var(--text-4); letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ne-backlinks-count {
+  background: var(--accent-soft); color: var(--accent);
+  padding: 1px 5px; border-radius: 9px;
+}
+.ne-backlinks-row {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 5px 12px; background: transparent; border: 0; text-align: left; cursor: default;
+}
+.ne-backlinks-row:hover { background: var(--panel-2); }
+.ne-backlinks-arrow { color: var(--accent); font-size: 11px; flex-shrink: 0; }
+.ne-backlinks-title {
+  font-size: 11.5px; color: var(--text-2); flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ne-backlinks-age { font-size: 9.5px; color: var(--text-4); flex-shrink: 0; }
