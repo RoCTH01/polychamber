@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import SlashMenu from './SlashMenu'
 import NotePicker from './NotePicker'
-import type { Item } from '@/types'
+import type { Item, MessageKind } from '@/types'
 
 type ComposerMode = 'normal' | 'slash' | 'notePicker-link' | 'notePicker-reference'
 
 interface Props {
   noteId: string
-  onSend: (body: string, kind: string) => void
+  onSend: (body: string, kind: MessageKind) => void
 }
 
 const KINDS = [
@@ -38,7 +38,7 @@ export default function Composer({ noteId, onSend }: Props) {
     setBody(val)
     const last = val[val.length - 1]
     const prev = val.length > 1 ? val[val.length - 2] : null
-    if (last === '/' && (prev === null || /[\s\n]/.test(prev))) {
+    if (mode === 'normal' && last === '/' && (prev === null || /[\s\n]/.test(prev))) {
       setMode('slash')
       setSlashPos(val.length - 1)
     } else if (mode === 'slash') {

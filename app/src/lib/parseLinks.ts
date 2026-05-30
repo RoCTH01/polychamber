@@ -4,12 +4,12 @@ export interface ParsedLink {
 }
 
 // Matches [[xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:Any Title Here]]
-const LINK_RE = /\[\[([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):([^\]]*)\]\]/g
+const LINK_PATTERN = /\[\[([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):([^\]]*)\]\]/
 
 export function parseLinks(body: string): ParsedLink[] {
   const links: ParsedLink[] = []
   let m
-  const re = new RegExp(LINK_RE.source, 'g')
+  const re = new RegExp(LINK_PATTERN.source, 'g')
   while ((m = re.exec(body)) !== null) {
     links.push({ uuid: m[1], title: m[2] })
   }

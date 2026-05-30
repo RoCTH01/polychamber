@@ -6,7 +6,8 @@ import Composer from './Composer'
 import { useItems } from '@/hooks/useItems'
 import { useContextMenu } from '@/components/ui/ContextMenu'
 import { SRC_LABEL, SRC_NAME } from '@/types'
-import type { Item, CalendarEvent } from '@/types'
+import type { Item, CalendarEvent, MessageKind } from '@/types'
+import { mutate as globalMutate } from 'swr'
 import '@/app/note-editor.css'
 import { useItemLinks } from '@/hooks/useItemLinks'
 import { useAppStore } from '@/store/app'
@@ -58,7 +59,7 @@ export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Pro
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [note.id, allItems.length])
 
-  const send = async (body: string, kind: string) => {
+  const send = async (body: string, kind: MessageKind) => {
     await createItem({
       kind: 'note',
       body,
@@ -66,12 +67,22 @@ export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Pro
       tags: [],
       message: {
         who: 'me' as const,
-        messageKind: (kind === 'text' ? null : kind) as import('@/types').MessageKind | null,
+        messageKind: kind === 'text' ? null : kind,
         reactions: null,
         linkMeta: null,
         done: kind === 'task' ? false : null,
       },
     })
+    // Revalidate backlinks for inline note links and reference blocks
+    if (kind === 'note_ref') {
+      const toId = body.split(':')[0]
+      if (toId) globalMutate(`/api/item-links?noteId=${toId}`)
+    } else if (body.includes('[[')) {
+      // Inline links: revalidate backlinks for each linked note
+      const { parseLinks } = await import('@/lib/parseLinks')
+      const links = parseLinks(body)
+      links.forEach(l => globalMutate(`/api/item-links?noteId=${l.uuid}`))
+    }
   }
 
   const addTag = (tag: string) => {

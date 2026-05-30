@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
   // For note_ref messages, create a reference link edge
   if (message?.messageKind === 'note_ref' && itemBody) {
     const toId = itemBody.split(':')[0]
-    if (toId) {
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+    if (toId && UUID_RE.test(toId)) {
       await db.insert(itemLinks)
         .values({ fromId: item.id, toId, linkKind: 'reference' as const })
         .onConflictDoNothing()

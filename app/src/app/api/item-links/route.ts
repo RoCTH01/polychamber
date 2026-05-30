@@ -8,12 +8,16 @@ export async function GET(request: NextRequest) {
   if (!noteId) return NextResponse.json({ error: 'noteId required' }, { status: 400 })
 
   const result = await db.execute(sql`
-    SELECT DISTINCT ON (root.id) root.*
-    FROM item_links il
-    INNER JOIN items msg  ON msg.id  = il.from_id
-    INNER JOIN items root ON root.id = COALESCE(msg.parent_id, msg.id)
-    WHERE il.to_id = ${noteId}
-    ORDER BY root.id, root.created_at DESC
+    SELECT *
+    FROM (
+      SELECT DISTINCT ON (root.id) root.*
+      FROM item_links il
+      INNER JOIN items msg  ON msg.id  = il.from_id
+      INNER JOIN items root ON root.id = COALESCE(msg.parent_id, msg.id)
+      WHERE il.to_id = ${noteId}
+      ORDER BY root.id
+    ) sub
+    ORDER BY sub.created_at DESC
   `)
 
   const backlinks = result.rows.map((r: Record<string, unknown>) => ({
