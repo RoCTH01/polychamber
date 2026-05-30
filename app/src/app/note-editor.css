@@ -1,6 +1,6 @@
 /* Note Editor — chatroom-style right sidebar */
 
-.note-editor {
+.note-panel {
   width: 360px;
   flex-shrink: 0;
   border-left: 1px solid var(--border-subtle);
@@ -267,3 +267,76 @@
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .ne-backlinks-age { font-size: 9.5px; color: var(--text-4); flex-shrink: 0; }
+
+/* ─── NotePanel mode toggle ─────────────────────────────────────────── */
+.np-mode-bar {
+  display: flex; align-items: center;
+  padding: 0 12px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--panel);
+}
+.np-mode-btn {
+  height: 28px; padding: 0 10px;
+  background: transparent; border: 0;
+  border-bottom: 2px solid transparent;
+  font: 11px/1 var(--font-ui); color: var(--text-3);
+  cursor: default; margin-bottom: -1px; letter-spacing: 0.01em;
+}
+.np-mode-btn:hover { color: var(--text-2); }
+.np-mode-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ─── Document editor ────────────────────────────────────────────────── */
+.np-doc-wrap {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 16px 16px 40px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.np-doc-wrap::-webkit-scrollbar { width: 8px; }
+.np-doc-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
+.np-doc-textarea {
+  width: 100%; min-height: 100%;
+  background: transparent; border: 0; outline: none; resize: none;
+  font: 14px/1.75 var(--font-ui); color: var(--text);
+  white-space: pre-wrap; word-wrap: break-word; box-sizing: border-box;
+}
+.np-doc-textarea::placeholder { color: var(--text-4); }
+
+/* ─── Long message collapse ──────────────────────────────────────────── */
+.ne-text-collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ne-expand-btn {
+  background: transparent; border: 0; padding: 3px 0 0;
+  font: 11px/1 var(--font-ui); color: var(--accent);
+  cursor: default; display: block;
+}
+.ne-expand-btn:hover { text-decoration: underline; }
+
+/* ─── Me-message timestamp (hover) ──────────────────────────────────── */
+.ne-me-time {
+  font-size: 9.5px; color: var(--text-4);
+  margin-bottom: 2px; font-variant-numeric: tabular-nums;
+}
+/* Mine messages: no avatar col so give a small left indent to match */
+.ne-msg.mine { padding-left: 16px; }
+
+/* ─── Feed row hover action buttons ─────────────────────────────────── */
+.feed-row-actions {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  display: none; align-items: center; gap: 2px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 5px; padding: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25); z-index: 2;
+}
+.feed-row:hover .feed-row-actions { display: flex; }
+.feed-row-btn {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; border-radius: 3px;
+  color: var(--text-3); font-size: 12px; cursor: default;
+}
+.feed-row-btn:hover { background: var(--panel-2); color: var(--text); }
+.feed-row-btn:not(:last-child) { border-right: 1px solid var(--border-subtle); }

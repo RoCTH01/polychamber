@@ -159,7 +159,7 @@ html, body {
 .sidebar   { grid-row: 2; }
 .app-main  { grid-row: 2; }
 /* Note editor (auto col) also in row 2 */
-.note-editor { grid-row: 2; }
+.note-panel { grid-row: 2; }
 
 .app-main {
   display: flex;
