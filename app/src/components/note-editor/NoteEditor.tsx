@@ -157,7 +157,7 @@ export default function NoteEditor({ note, onClose, onUpdate, linkedEvent }: Pro
         })}
       </div>
 
-      <Composer onSend={send} />
+      <Composer onSend={send} noteId={note.id} />
     </aside>
   )
 }
