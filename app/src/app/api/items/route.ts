@@ -49,10 +49,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const { kind, body: itemBody, src, author, parentId, starred, tags, reminder, funnel, focus, message } = body
+  const { kind, body: itemBody, title, src, author, parentId, starred, tags, reminder, funnel, focus, message } = body
 
   const [item] = await db.insert(items).values({
     kind,
+    title: title ?? null,
     body: itemBody,
     src:      src      ?? null,
     author:   author   ?? null,

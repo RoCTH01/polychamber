@@ -47,6 +47,7 @@ export interface ItemMessage {
 export interface Item {
   id: string
   kind: ItemKind
+  title: string | null
   body: string
   src: Src | null
   author: string | null

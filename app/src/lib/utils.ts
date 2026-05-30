@@ -22,6 +22,17 @@ export function relativeTime(date: Date): string {
 }
 
 /**
+ * Formats a message timestamp. Returns "HH:MM" for today's messages,
+ * "MMM D · HH:MM" for older ones.
+ */
+export function formatMsgTime(date: Date): string {
+  const now = new Date()
+  const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+  if (date.toDateString() === now.toDateString()) return time
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + time
+}
+
+/**
  * Returns true if the text is long enough to warrant a collapse/expand toggle.
  * Splits on explicit newlines, then estimates soft-wrap lines at 80 chars per visual line.
  */

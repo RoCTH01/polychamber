@@ -113,7 +113,8 @@ function NoteRow({ note, first, active, onEdit, onChat, onContextMenu, onTagCont
         {note.starred && <span style={{ color: 'var(--accent)', fontSize: 11 }}>★</span>}
         {note.funnel && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--accent)', opacity: 0.7 }}>{note.funnel.queueTag}</span>}
       </div>
-      <div className="feed-body" style={{ fontSize: 'var(--fs-sm)', color: 'var(--text)', lineHeight: 1.55, textWrap: 'pretty' } as React.CSSProperties}>
+      {note.title && <div className="feed-title">{note.title}</div>}
+      <div className="feed-body" style={{ fontSize: 'var(--fs-sm)', color: note.title ? 'var(--text-2)' : 'var(--text)', lineHeight: 1.55, textWrap: 'pretty' } as React.CSSProperties}>
         {note.body}
       </div>
       {note.tags.length > 0 && (

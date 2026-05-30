@@ -285,6 +285,16 @@
 .np-mode-btn:hover { color: var(--text-2); }
 .np-mode-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
+/* ─── Document title input ───────────────────────────────────────────── */
+.np-doc-title {
+  width: 100%; background: transparent; border: 0; outline: none;
+  font: 700 18px/1.3 var(--font-ui); color: var(--text);
+  padding: 0 0 10px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  box-sizing: border-box;
+}
+.np-doc-title::placeholder { color: var(--text-4); font-weight: 400; }
+
 /* ─── Document editor ────────────────────────────────────────────────── */
 .np-doc-wrap {
   flex: 1; min-height: 0; overflow-y: auto;

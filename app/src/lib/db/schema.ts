@@ -7,6 +7,7 @@ import type { LayoutItem } from '@/types'
 export const items = pgTable('items', {
   id:        uuid('id').primaryKey().defaultRandom(),
   kind:      text('kind').notNull(),
+  title:     text('title'),
   body:      text('body').notNull(),
   src:       text('src'),
   author:    text('author'),

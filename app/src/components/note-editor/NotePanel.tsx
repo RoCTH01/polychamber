@@ -24,7 +24,8 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
   const scrollRef = useRef<HTMLDivElement>(null)
   const [localTags, setLocalTags] = useState(note.tags)
   const [tagInput, setTagInput]   = useState('')
-  // Document mode body — local copy that syncs to note.body when note changes
+  // Document mode local copies — sync to note when note.id changes
+  const [docTitle, setDocTitle]   = useState(note.title ?? '')
   const [docBody, setDocBody]     = useState(note.body)
 
   const { open: openMenu }  = useContextMenu()
@@ -33,8 +34,8 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
   const setOpenNoteMode     = useAppStore(s => s.setOpenNoteMode)
   const { backlinks }       = useItemLinks(note.id)
 
-  // Reset doc body when switching to a different note
-  useEffect(() => { setDocBody(note.body) }, [note.id])
+  // Reset doc state when switching to a different note
+  useEffect(() => { setDocBody(note.body); setDocTitle(note.title ?? '') }, [note.id])
 
   const queueNote = async (queueTag: 'next' | 'soon' | 'later') => {
     const updatedFunnel = { mediaKind: 'article' as const, source: note.src ?? 'me', est: '', queueTag }
@@ -89,18 +90,19 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
     }
   }
 
+  const isDirty = () => docBody !== note.body || docTitle !== (note.title ?? '')
+
   const saveDoc = () => {
-    if (docBody !== note.body) onUpdate({ ...note, body: docBody })
+    if (isDirty()) onUpdate({ ...note, body: docBody, title: docTitle || null })
   }
 
-  // Debounced auto-save: fires 1500ms after the last keystroke.
-  // onBlur still saves immediately on focus-loss; this covers the "user paused" case.
+  // Debounced auto-save: fires 1500ms after the last keystroke on body or title.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (docBody === note.body) return
-    const timer = setTimeout(() => onUpdate({ ...note, body: docBody }), 1500)
+    if (!isDirty()) return
+    const timer = setTimeout(() => onUpdate({ ...note, body: docBody, title: docTitle || null }), 1500)
     return () => clearTimeout(timer)
-  }, [docBody]) // intentionally excludes note/onUpdate — stale-closure window is only 1.5s
+  }, [docBody, docTitle]) // intentionally excludes note/onUpdate — stale-closure window is only 1.5s
 
   const addTag = (tag: string) => {
     const next = [...localTags, tag]
@@ -138,7 +140,7 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
               {note.src && <><span>{SRC_NAME[note.src]}</span><span>·</span></>}
               <span className="tab">{allItems.length} msg</span>
               <span>·</span>
-              <span>opened {new Date(note.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+              <span>edited {relativeTime(new Date(note.updatedAt))}</span>
             </div>
           </div>
         </div>
@@ -155,7 +157,7 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
       <div className="np-mode-bar">
         <button
           className={`np-mode-btn${openNoteMode === 'document' ? ' active' : ''}`}
-          onClick={() => { if (openNoteMode !== 'document') setDocBody(note.body); setOpenNoteMode('document') }}>
+          onClick={() => { if (openNoteMode !== 'document') { setDocBody(note.body); setDocTitle(note.title ?? '') } setOpenNoteMode('document') }}>
           document
         </button>
         <button
@@ -177,13 +179,20 @@ export default function NotePanel({ note, onClose, onUpdate, linkedEvent }: Prop
           onChange={e => setTagInput(e.target.value.replace(/\s+/g, ''))}
           onKeyDown={e => { if (e.key === 'Enter' && tagInput) { addTag(tagInput); setTagInput('') } }} />
         <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 9.5, color: 'var(--text-4)', letterSpacing: '0.06em' }}>
-          {openNoteMode === 'thread' ? 'THREAD' : 'DOC'}{openNoteMode === 'document' && docBody !== note.body ? ' ●' : ''} · {note.id.slice(0, 8).toUpperCase()}
+          {openNoteMode === 'thread' ? 'THREAD' : 'DOC'}{openNoteMode === 'document' && isDirty() ? ' ●' : ''} · {note.id.slice(0, 8).toUpperCase()}
         </span>
       </div>
 
       {/* Document mode */}
       {openNoteMode === 'document' && (
         <div className="np-doc-wrap">
+          <input
+            className="np-doc-title"
+            value={docTitle}
+            placeholder="Untitled"
+            onChange={e => setDocTitle(e.target.value)}
+            onBlur={saveDoc}
+          />
           <textarea
             className="np-doc-textarea"
             value={docBody}

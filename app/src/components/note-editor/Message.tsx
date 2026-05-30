@@ -5,6 +5,7 @@ import MessageContent from './MessageContent'
 import { useContextMenu } from '@/components/ui/ContextMenu'
 import { SRC_LABEL, SRC_NAME } from '@/types'
 import type { Item, ItemMessage } from '@/types'
+import { formatMsgTime } from '@/lib/utils'
 
 interface Props {
   item: Item
@@ -71,7 +72,7 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
             </span>
           ) : (
             <span className="ne-mini-time mono">
-              {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+              {formatMsgTime(new Date(item.createdAt))}
             </span>
           )}
         </div>
@@ -84,7 +85,7 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
             <span className="ne-msg-author">{rootAuthor ?? (rootSrc ? SRC_NAME[rootSrc] : 'Source')}</span>
             {isSrc && rootSrc && <span className="ne-msg-via mono">via {SRC_NAME[rootSrc]}</span>}
             <span className="ne-msg-t mono">
-              {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+              {formatMsgTime(new Date(item.createdAt))}
             </span>
           </div>
         )}
@@ -92,7 +93,7 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
         {/* Timestamp shown on hover for own messages */}
         {isMe && hover && !grouped && (
           <div className="ne-me-time mono">
-            {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+            {formatMsgTime(new Date(item.createdAt))}
           </div>
         )}
 
