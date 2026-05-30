@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import SlashMenu, { SLASH_OPTIONS } from './SlashMenu'
 import NotePicker from './NotePicker'
 import type { Item, MessageKind } from '@/types'
@@ -21,6 +21,7 @@ const KINDS = [
 type KindKey = typeof KINDS[number]['k']
 
 export default function Composer({ noteId, onSend }: Props) {
+  const textareaRef                 = useRef<HTMLTextAreaElement>(null)
   const [body, setBody]             = useState('')
   const [kind, setKind]             = useState<KindKey>('text')
   const [mode, setMode]             = useState<ComposerMode>('normal')
@@ -47,6 +48,11 @@ export default function Composer({ noteId, onSend }: Props) {
   const resetSlash = () => {
     setSlashQuery('')
     setSlashIndex(0)
+  }
+
+  const refocus = () => {
+    // Return focus to the textarea after a menu closes
+    requestAnimationFrame(() => textareaRef.current?.focus())
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -96,6 +102,7 @@ export default function Composer({ noteId, onSend }: Props) {
     if (id === 'link') {
       setBody(trimmed)
       setMode('notePicker-link')
+      // NotePicker has its own autoFocus — no refocus needed here
     } else if (id === 'reference') {
       setBody(trimmed)
       setMode('notePicker-reference')
@@ -103,6 +110,7 @@ export default function Composer({ noteId, onSend }: Props) {
       setBody(trimmed)
       setKind(id)
       setMode('normal')
+      refocus()
     }
   }
 
@@ -111,12 +119,14 @@ export default function Composer({ noteId, onSend }: Props) {
     if (mode === 'notePicker-link') {
       setBody(b => `${b}[[${note.id}:${displayTitle}]] `)
       setMode('normal')
+      refocus()  // Return focus so user can keep typing or hit ⌘⏎ to send
     } else {
       // Reference block — auto-send so the user never sees 'uuid:Title' in textarea
       onSend(`${note.id}:${displayTitle}`, 'note_ref')
       setBody('')
       setKind('text')
       setMode('normal')
+      refocus()
     }
   }
 
@@ -124,6 +134,7 @@ export default function Composer({ noteId, onSend }: Props) {
     setBody(b => b.slice(0, slashPos))
     setMode('normal')
     resetSlash()
+    refocus()
   }
 
   const placeholder = KINDS.find(k2 => k2.k === kind)?.placeholder ?? ''
@@ -153,6 +164,7 @@ export default function Composer({ noteId, onSend }: Props) {
         )}
         <span className="ne-avatar me">me</span>
         <textarea
+          ref={textareaRef}
           className="ne-input"
           placeholder={placeholder}
           value={body}
