@@ -15,9 +15,10 @@ const SOURCES = ['All', 'Me', 'New', 'TW', 'DC', 'OB', 'MN', 'RD']
 
 export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
   const [src, setSrc] = useState('All')
-  const activeWs = useAppStore(s => s.activeWorkspace)
-  const openNoteId  = useAppStore(s => s.openNoteId)
-  const setOpenNote = useAppStore(s => s.setOpenNoteId)
+  const activeWs       = useAppStore(s => s.activeWorkspace)
+  const openNoteId     = useAppStore(s => s.openNoteId)
+  const setOpenNote    = useAppStore(s => s.setOpenNoteId)
+  const setOpenNoteMode = useAppStore(s => s.setOpenNoteMode)
   const { open: openMenu } = useContextMenu()
   const { workspaces, addWidget } = useWorkspaces()
   const ws = workspaces.find(w => w.name === activeWs)
@@ -52,7 +53,8 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
   const handleContextMenu = (e: React.MouseEvent, note: Item) => {
     const alreadyQueued = !!note.funnel
     openMenu(e, [
-      { label: 'Open',              action: () => setOpenNote(note.id) },
+      { label: 'Edit (document)',   action: () => { setOpenNoteMode('document'); setOpenNote(note.id) } },
+      { label: 'Open thread',       action: () => { setOpenNoteMode('thread');   setOpenNote(note.id) } },
       { divider: true },
       { label: note.starred ? 'Unstar' : 'Star', checked: note.starred, action: () => updateItem(note.id, { starred: !note.starred }) },
       { label: 'Copy text',         action: () => navigator.clipboard.writeText(note.body) },
@@ -73,7 +75,8 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
         {filtered.map((n, i) => (
           <NoteRow key={n.id} note={n} first={i === 0}
             active={openNoteId === n.id}
-            onClick={() => setOpenNote(openNoteId === n.id ? null : n.id)}
+            onEdit={() => { setOpenNoteMode('document'); setOpenNote(n.id) }}
+            onChat={() => { setOpenNoteMode('thread');   setOpenNote(n.id) }}
             onContextMenu={e => handleContextMenu(e, n)}
             onTagContextMenu={handleTagContextMenu} />
         ))}
@@ -87,9 +90,10 @@ export default function FeedWidget({ id, dragHandlers, onClose }: Props) {
   )
 }
 
-function NoteRow({ note, first, active, onClick, onContextMenu, onTagContextMenu }: {
+function NoteRow({ note, first, active, onEdit, onChat, onContextMenu, onTagContextMenu }: {
   note: Item; first: boolean; active: boolean
-  onClick: () => void
+  onEdit: () => void
+  onChat: () => void
   onContextMenu: (e: React.MouseEvent) => void
   onTagContextMenu: (e: React.MouseEvent, tag: string) => void
 }) {
@@ -98,7 +102,7 @@ function NoteRow({ note, first, active, onClick, onContextMenu, onTagContextMenu
       padding: 'calc(var(--pad) * 0.85) var(--pad)',
       borderTop: first ? 'none' : '1px solid var(--border-subtle)',
       display: 'flex', flexDirection: 'column', gap: 4,
-    }} onClick={onClick} onContextMenu={onContextMenu}>
+    }} onContextMenu={onContextMenu}>
       <div className="row gap-8">
         {note.src && <span className={`src-icon src-${note.src}`}>{SRC_LABEL[note.src]}</span>}
         {!note.src && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 600, letterSpacing: '0.07em', color: 'var(--text-4)', background: 'var(--panel-hi)', border: '1px solid var(--border-subtle)', borderRadius: 3, padding: '1px 4px', flexShrink: 0 }}>ME</span>}
@@ -119,6 +123,13 @@ function NoteRow({ note, first, active, onClick, onContextMenu, onTagContextMenu
           ))}
         </div>
       )}
+      {/* Hover action buttons — shown via CSS .feed-row:hover */}
+      <div className="feed-row-actions">
+        <button className="feed-row-btn" title="Edit document"
+          onClick={e => { e.stopPropagation(); onEdit() }}>✎</button>
+        <button className="feed-row-btn" title="Open thread"
+          onClick={e => { e.stopPropagation(); onChat() }}>⌨</button>
+      </div>
     </div>
   )
 }
