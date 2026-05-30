@@ -15,9 +15,10 @@ interface Props {
   onUpdate: (patch: Partial<Item>) => void
   onDelete: () => void
   onReact: (emoji: string) => void
+  onLinkClick?: (noteId: string) => void
 }
 
-export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTask, onUpdate, onDelete, onReact }: Props) {
+export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTask, onUpdate, onDelete, onReact, onLinkClick }: Props) {
   const [hover, setHover]           = useState(false)
   const [editing, setEditing]       = useState(false)
   const [editText, setEditText]     = useState(item.body)
@@ -95,7 +96,7 @@ export default function Message({ item, rootSrc, rootAuthor, grouped, onToggleTa
             </div>
           </div>
         ) : (
-          <MessageContent body={item.body} message={msg ?? undefined} onToggleTask={onToggleTask} />
+          <MessageContent body={item.body} message={msg ?? undefined} onToggleTask={onToggleTask} onLinkClick={onLinkClick} />
         )}
 
         {reactions.length > 0 && (

@@ -4,17 +4,29 @@ interface Props {
   body: string
   message?: ItemMessage
   onToggleTask?: () => void
+  onLinkClick?: (noteId: string) => void
 }
 
-/** Light inline markdown: **bold**, *italic*, `code`, @mention, #tag, URLs */
-function fmt(text: string): React.ReactNode[] {
+/** Light inline markdown + [[uuid:Title]] note chips */
+function fmt(text: string, onLinkClick?: (id: string) => void): React.ReactNode[] {
   const out: React.ReactNode[] = []
-  const re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|@\w+|#\w+|https?:\/\/\S+)/g
+  const re = /(\[\[[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[^\]]*\]\]|\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|@\w+|#\w+|https?:\/\/\S+)/g
   let last = 0; let m; let key = 0
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(<span key={key++}>{text.slice(last, m.index)}</span>)
     const tok = m[0]
-    if      (tok.startsWith('**'))   out.push(<strong key={key++}>{tok.slice(2, -2)}</strong>)
+    if (tok.startsWith('[[')) {
+      const inner = tok.slice(2, -2)
+      const colon = inner.indexOf(':')
+      const uuid  = colon >= 0 ? inner.slice(0, colon) : ''
+      const title = colon >= 0 ? inner.slice(colon + 1) : inner
+      out.push(
+        <button key={key++} className="ne-note-chip"
+          onClick={() => uuid && onLinkClick?.(uuid)}>
+          ↗ {title || 'untitled'}
+        </button>
+      )
+    } else if (tok.startsWith('**'))   out.push(<strong key={key++}>{tok.slice(2, -2)}</strong>)
     else if (tok.startsWith('*'))    out.push(<em key={key++}>{tok.slice(1, -1)}</em>)
     else if (tok.startsWith('`'))    out.push(<code key={key++} className="ne-code-inline">{tok.slice(1, -1)}</code>)
     else if (tok.startsWith('@'))    out.push(<span key={key++} className="ne-mention">{tok}</span>)
@@ -26,8 +38,20 @@ function fmt(text: string): React.ReactNode[] {
   return out
 }
 
-export default function MessageContent({ body, message, onToggleTask }: Props) {
+export default function MessageContent({ body, message, onToggleTask, onLinkClick }: Props) {
   const kind = message?.messageKind
+
+  if (kind === 'note_ref') {
+    const colon = body.indexOf(':')
+    const uuid  = colon >= 0 ? body.slice(0, colon) : ''
+    const title = colon >= 0 ? body.slice(colon + 1) : body
+    return (
+      <div className="ne-note-ref" onClick={() => uuid && onLinkClick?.(uuid)}>
+        <div className="ne-note-ref-label mono">LINKED NOTE</div>
+        <div className="ne-note-ref-title">↗ {title || 'untitled'}</div>
+      </div>
+    )
+  }
 
   if (kind === 'task') {
     return (
@@ -35,7 +59,7 @@ export default function MessageContent({ body, message, onToggleTask }: Props) {
         <button onClick={onToggleTask} className={`ne-task-box${message?.done ? ' done' : ''}`}>
           {message?.done ? '✓' : ''}
         </button>
-        <span className={`ne-task-text${message?.done ? ' done' : ''}`}>{fmt(body)}</span>
+        <span className={`ne-task-text${message?.done ? ' done' : ''}`}>{fmt(body, onLinkClick)}</span>
       </div>
     )
   }
@@ -53,8 +77,8 @@ export default function MessageContent({ body, message, onToggleTask }: Props) {
     )
   }
 
-  if (kind === 'link') return <a className="ne-link" href={body} onClick={e => e.preventDefault()}>{body}</a>
-  if (kind === 'quote') return <blockquote className="ne-quote">{fmt(body)}</blockquote>
+  if (kind === 'link')  return <a className="ne-link" href={body} onClick={e => e.preventDefault()}>{body}</a>
+  if (kind === 'quote') return <blockquote className="ne-quote">{fmt(body, onLinkClick)}</blockquote>
 
-  return <div className="ne-text">{fmt(body)}</div>
+  return <div className="ne-text">{fmt(body, onLinkClick)}</div>
 }
