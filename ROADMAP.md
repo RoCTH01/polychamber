@@ -129,17 +129,31 @@ Everything is a first-class item — notes you write and content you save from o
 
 ---
 
-## Phase C — Note-to-note linking
-> ~2 days
+## Phase C — Note-to-note linking ✓ Complete
+
+- **`item_links` edge table** — `(from_id, to_id, link_kind)` with cascade deletes and unique constraint; `from_id` is the specific message item so sibling replies don't orphan each other's links
+- **`/` slash command** — Composer detects `/` after whitespace; SlashMenu shows Link, Reference, Task, Quote; letter filtering + arrow key navigation + Enter to select; refocuses textarea on close
+- **Inline link chips** — `[[uuid:Title]]` tokens in message body; `parseLinks` utility; `fmt()` renders amber clickable chips mid-text; synced to `item_links` on create/edit
+- **Reference blocks** — standalone child messages with `messageKind='note_ref'`; rendered as bordered card with LINKED NOTE label; auto-sent on note pick
+- **NotePicker** — search-as-you-type over cached notes; arrow keys + Enter navigate; self-link excluded
+- **Backlinks panel** — LINKED FROM section pinned below message stream; only shown when links exist; clicking a row opens the linking note; ordered by recency
+- **SWR invalidation** — target note's backlinks panel refreshes immediately after any link is created
+
+---
+
+## Phase C — Note-to-note linking ✓ Complete
 
 The PKM layer — ideas connecting to each other.
 
-| Feature | What it needs |
+| Feature | Details |
 |---|---|
-| **`item_links` table** | `(from_id, to_id)` edge table with cascade deletes |
-| **`[[wiki-link]]` syntax** | Parser in the note editor body; renders as a clickable chip |
-| **Backlinks panel** | Section at the bottom of NoteEditor: "X notes link here" |
-| **Link via context menu** | "Link to note…" option opens a search-and-select |
+| **`item_links` table** | `(from_id, to_id, link_kind)` edge table; cascade deletes both ends; `UNIQUE(from_id, to_id)`; `from_id` is the specific message item so sibling replies don't orphan each other's links |
+| **`[[uuid:Title]]` inline chips** | `parseLinks` utility parses tokens from body; `fmt()` in MessageContent renders amber clickable chips mid-text; body encoding stores title at insert time |
+| **Reference blocks** | `/` → Reference → note picker → auto-sends child message with `messageKind='note_ref'`; renders as a bordered card in the stream |
+| **`/` slash command** | Composer detects `/` after whitespace; shows SlashMenu with Link, Reference, Task, Quote; letter filtering narrows options; arrow keys + Enter navigate; refocuses textarea on dismiss |
+| **NotePicker** | Search-as-you-type dropdown over cached `useItems` data; arrow keys + Enter navigate; mouse hover syncs; excludes self-links; max 8 results |
+| **Backlinks panel** | LINKED FROM section pinned below message stream; only renders when links exist; clickable rows open the linking note; ordered by recency |
+| **Link sync** | `POST /api/items` and `PATCH /api/items/[id]` re-parse body and sync `item_links` rows; `note_ref` messages also write a reference edge; SWR invalidation on both inline and reference sends |
 
 ---
 
